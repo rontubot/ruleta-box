@@ -204,8 +204,8 @@ function handleRestEnd() {
     logEvent('🔄 Tag Team: ¡Relevo por campana obligatorio!');
   }
 
-  // Initial spin for the new round
-  executeRouletteSpin();
+  // La ruleta girará automáticamente a los 30 segundos del round
+  broadcastState();
 }
 
 // Socket Connection
@@ -226,11 +226,11 @@ io.on('connection', (socket) => {
       state.currentRound = 1;
       state.roundTimeLeft = state.roundDuration;
       state.rouletteTimeLeft = state.rouletteInterval;
+      state.currentRule = null;
       state.winnerDeclaration = null;
       state.bannerAlert = null;
       io.emit('sound_trigger', 'bell');
-      logEvent('🔥 Combate iniciado - Round 1');
-      executeRouletteSpin();
+      logEvent('🔥 Combate iniciado - Round 1 (La ruleta girará al segundo 30)');
     } else if (state.phase === 'paused') {
       state.phase = 'fighting';
       logEvent('▶️ Combate reanudado ("¡BOX!")');
