@@ -417,6 +417,16 @@ canvas#rouletteWheel {
   pointer-events: auto;
 }
 
+.active-rule-card.team-red {
+  border-color: var(--red-neon);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 35px var(--red-glow);
+}
+
+.active-rule-card.team-blue {
+  border-color: var(--blue-neon);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 35px var(--blue-glow);
+}
+
 .active-rule-card.spinning {
   border-color: #ff1e56;
   box-shadow: 0 0 30px rgba(255, 30, 86, 0.6);
@@ -457,6 +467,18 @@ canvas#rouletteWheel {
   background: #747d8c;
   color: #fff;
   box-shadow: none;
+}
+
+.rule-points-badge.badge-red {
+  background: var(--red-neon);
+  color: #fff;
+  box-shadow: 0 0 14px var(--red-glow);
+}
+
+.rule-points-badge.badge-blue {
+  background: var(--blue-neon);
+  color: #0b0c10;
+  box-shadow: 0 0 14px var(--blue-glow);
 }
 
 .rule-title {

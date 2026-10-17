@@ -285,13 +285,38 @@ socket.on('state_update', (state) => {
 
   // Bonus buttons text with active rule points
   const activePts = state.currentRule ? state.currentRule.pts : 10;
-  redBonusBtn.textContent = `⭐ + Bono Ruleta (+${activePts})`;
-  blueBonusBtn.textContent = `⭐ + Bono Ruleta (+${activePts})`;
-  bothBonusBtn.textContent = `🤝 Ambos Cumplieron el Reto (+${activePts} a Cada Uno)`;
+  const target = state.currentRule ? state.currentRule.targetTeam : null;
+
+  if (target === 'red') {
+    redBonusBtn.textContent = `⭐ +${activePts} ROJO (${state.currentRule.name})`;
+    redBonusBtn.style.opacity = '1';
+    redBonusBtn.style.border = '2px solid #fff';
+    blueBonusBtn.textContent = `⭐ + Bono Azul (+${activePts})`;
+    blueBonusBtn.style.opacity = '0.5';
+    blueBonusBtn.style.border = 'none';
+    bothBonusBtn.style.display = 'none';
+  } else if (target === 'blue') {
+    blueBonusBtn.textContent = `⭐ +${activePts} AZUL (${state.currentRule.name})`;
+    blueBonusBtn.style.opacity = '1';
+    blueBonusBtn.style.border = '2px solid #fff';
+    redBonusBtn.textContent = `⭐ + Bono Rojo (+${activePts})`;
+    redBonusBtn.style.opacity = '0.5';
+    redBonusBtn.style.border = 'none';
+    bothBonusBtn.style.display = 'none';
+  } else {
+    redBonusBtn.textContent = `⭐ + Bono Ruleta (+${activePts})`;
+    redBonusBtn.style.opacity = '1';
+    redBonusBtn.style.border = 'none';
+    blueBonusBtn.textContent = `⭐ + Bono Ruleta (+${activePts})`;
+    blueBonusBtn.style.opacity = '1';
+    blueBonusBtn.style.border = 'none';
+    bothBonusBtn.style.display = 'block';
+    bothBonusBtn.textContent = `🤝 Ambos Cumplieron el Reto (+${activePts} a Cada Uno)`;
+  }
 
   // Rule preview
   if (state.currentRule) {
-    adminRuleTitle.textContent = `${state.currentRule.icon || '🥊'} ${state.currentRule.name}`;
+    adminRuleTitle.textContent = `${state.currentRule.icon || '🥊'} ${state.currentRule.fullName || state.currentRule.name}`;
     adminRuleBadge.textContent = state.currentRule.pts > 0 ? `+${state.currentRule.pts} PTS` : 'RELEVO';
     adminRuleDesc.textContent = state.currentRule.description;
   } else if (state.phase === 'rest') {

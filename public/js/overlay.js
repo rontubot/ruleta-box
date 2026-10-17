@@ -167,11 +167,25 @@ drawWheel(currentAngle);
 // Display rule card on bottom-right and fade out after reading time
 function displayRuleCard(rule) {
   if (!rule) return;
+
+  const isRed = rule.targetTeam === 'red';
+  const isBlue = rule.targetTeam === 'blue';
+
+  activeRuleCardEl.classList.remove('team-red', 'team-blue');
+  if (isRed) activeRuleCardEl.classList.add('team-red');
+  if (isBlue) activeRuleCardEl.classList.add('team-blue');
+
   ruleCategoryEl.textContent = `• ${rule.category || 'COMBATE'}`;
+  
+  let badgeClass = 'rule-points-badge';
+  if (rule.pts === 0) badgeClass += ' zero';
+  else if (isRed) badgeClass += ' badge-red';
+  else if (isBlue) badgeClass += ' badge-blue';
+  
+  rulePointsBadgeEl.className = badgeClass;
   rulePointsBadgeEl.textContent = rule.pts > 0 ? `+${rule.pts} PTS` : 'RELEVO';
-  rulePointsBadgeEl.className = `rule-points-badge ${rule.pts === 0 ? 'zero' : ''}`;
   ruleIconEl.textContent = rule.icon ? rule.icon.split(' ')[0] : '🥊';
-  ruleNameEl.textContent = rule.name;
+  ruleNameEl.textContent = rule.fullName || rule.name;
   ruleDescEl.textContent = rule.description;
 
   // Show active rule card on bottom-right
@@ -180,7 +194,8 @@ function displayRuleCard(rule) {
   // Update top persistent rule pill
   if (topActiveRulePillEl) {
     topActiveRulePillEl.style.display = 'block';
-    topActiveRulePillEl.innerHTML = `${rule.icon ? rule.icon.split(' ')[0] : '🥊'} ${rule.name} • ${rule.pts > 0 ? '+' + rule.pts + ' PTS' : 'RELEVO'}`;
+    const teamPrefix = isRed ? '🔴 ' : isBlue ? '🔵 ' : '';
+    topActiveRulePillEl.innerHTML = `${rule.icon ? rule.icon.split(' ')[0] : '🥊'} ${teamPrefix}${rule.fullName || rule.name} • ${rule.pts > 0 ? '+' + rule.pts + ' PTS' : 'RELEVO'}`;
   }
 
   // Stay visible for 7.5 seconds so it can be read comfortably, then fade out!

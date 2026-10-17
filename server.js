@@ -47,6 +47,8 @@ function createInitialState() {
       red: { total: 0, hits: 0, bonus: 0, fouls: 0 },
       blue: { total: 0, hits: 0, bonus: 0, fouls: 0 }
     },
+    teamBonusChances: { red: 0, blue: 0 },
+    lastTeamTarget: null,
     winnerDeclaration: null,
     bannerAlert: null,
     history: []
@@ -69,10 +71,49 @@ function broadcastState() {
 function selectRandomRule() {
   const rules = getRulesForMode(state.mode);
   if (!rules || rules.length === 0) return null;
-  // Try not to repeat the exact same rule if possible
-  const filtered = rules.filter(r => !state.currentRule || r.id !== state.currentRule.id);
-  const pool = filtered.length > 0 ? filtered : rules;
-  const picked = pool[Math.floor(Math.random() * pool.length)];
+
+  // Filtrar para no repetir exactamente la misma regla de forma consecutiva
+  let pool = rules.filter(r => !state.currentRule || r.id !== state.currentRule.id);
+  if (pool.length === 0) pool = rules;
+
+  if (!state.teamBonusChances) {
+    state.teamBonusChances = { red: 0, blue: 0 };
+  }
+  const redChances = state.teamBonusChances.red || 0;
+  const blueChances = state.teamBonusChances.blue || 0;
+  const lastTarget = state.lastTeamTarget;
+
+  // Evitar asignar dos retos exclusivos seguidos al mismo equipo
+  if (lastTarget) {
+    const nonRepeatingPool = pool.filter(r => !r.targetTeam || r.targetTeam !== lastTarget);
+    if (nonRepeatingPool.length > 0) {
+      pool = nonRepeatingPool;
+    }
+  }
+
+  // Algoritmo de Equidad Deportiva (Fairness):
+  // Si un equipo ha tenido menos oportunidades de reto exclusivo (Sacrificio / Ciego / Cambio),
+  // aumentamos fuertemente el peso para que el siguiente reto sea para él y se igualen las oportunidades
+  const weightedPool = [];
+  for (const r of pool) {
+    let weight = 1;
+    if (r.targetTeam === 'blue' && redChances > blueChances) {
+      weight = 4; // Mayor probabilidad para igualar al Equipo Azul
+    } else if (r.targetTeam === 'red' && blueChances > redChances) {
+      weight = 4; // Mayor probabilidad para igualar al Equipo Rojo
+    }
+    for (let i = 0; i < weight; i++) {
+      weightedPool.push(r);
+    }
+  }
+
+  const picked = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+
+  if (picked && picked.targetTeam) {
+    state.teamBonusChances[picked.targetTeam] = (state.teamBonusChances[picked.targetTeam] || 0) + 1;
+    state.lastTeamTarget = picked.targetTeam;
+  }
+
   return picked;
 }
 
