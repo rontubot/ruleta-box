@@ -421,3 +421,183 @@ body {
   color: var(--gold);
   font-family: var(--font-heading);
 }
+
+/* ===================================================
+   MOBILE RESPONSIVE ENHANCEMENTS (SMARTPHONES & TABLETS)
+   =================================================== */
+
+@media (max-width: 900px) {
+  body {
+    padding: 10px 8px;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .brand-section h1 {
+    font-size: 19px;
+  }
+
+  .brand-section p {
+    font-size: 12px;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .header-actions .btn,
+  .header-actions .btn-overlay-link {
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    padding: 10px 8px;
+    min-height: 42px;
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .card {
+    padding: 14px 12px;
+    margin-bottom: 14px;
+    border-radius: 14px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .form-input, .form-select {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  .btn {
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .status-timer-big {
+    font-size: 32px;
+  }
+
+  .control-btn-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .control-btn-grid .btn {
+    min-height: 48px;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .round-jump-row {
+    gap: 6px;
+  }
+
+  .round-jump-row .btn {
+    min-height: 42px;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .scoring-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .score-box {
+    padding: 14px;
+  }
+
+  .score-total-digits {
+    font-size: 52px;
+    margin: 8px 0;
+  }
+
+  .score-btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .score-btn-group .btn {
+    min-height: 46px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .referee-btn-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .referee-btn-grid .btn {
+    min-height: 46px;
+    font-size: 12px;
+  }
+
+  .winner-pick-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+
+  .pick-winner-btn {
+    min-height: 48px;
+    font-size: 14px;
+    padding: 10px 4px;
+  }
+
+  #proclaimWinnerBtn {
+    min-height: 52px;
+    font-size: 15px;
+    font-weight: 800;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 8px 6px;
+  }
+
+  .brand-section h1 {
+    font-size: 17px;
+  }
+
+  .header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .control-btn-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .score-btn-group {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .score-total-digits {
+    font-size: 46px;
+  }
+}
