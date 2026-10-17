@@ -80,14 +80,17 @@
         </div>
       </div>
 
-      <!-- ACTIVE RULE CARD (BOTTOM RIGHT - APPEARS, SHOWS EXPLANATION, THEN FADES OUT) -->
+      <!-- ACTIVE RULE CARD (BOTTOM RIGHT - FULL EXPLANATION, THEN COMPACTS INTO A MINI BAR UNTIL FINISHED) -->
       <div class="active-rule-card" id="activeRuleCard">
         <div class="rule-header">
           <div class="rule-category-tag">
-            <span>⚡ NUEVA REGLA ACTIVA</span>
+            <span id="ruleStatusLabel">⚡ NUEVA REGLA</span>
             <span id="ruleCategory">• COMBATE</span>
           </div>
-          <div class="rule-points-badge" id="rulePointsBadge">+10 PTS</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span class="rule-countdown-badge" id="ruleCountdownBadge">⏳ 30s</span>
+            <div class="rule-points-badge" id="rulePointsBadge">+10 PTS</div>
+          </div>
         </div>
         <h1 class="rule-title" id="ruleTitle">
           <span id="ruleIcon">🥊</span>

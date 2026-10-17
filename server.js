@@ -46,6 +46,8 @@ function createInitialState(mode = '1v1') {
     rouletteInterval: 30,
     rouletteTimeLeft: 30,
     currentRule: null,
+    ruleDuration: 30,
+    ruleTimeLeft: 0,
     rouletteSpinning: false,
     protectionCount: 0,
     protectionRunning: false,
@@ -135,8 +137,10 @@ function executeRouletteSpin(forcedRule = null) {
 
   setTimeout(() => {
     state.currentRule = chosenRule;
+    state.ruleDuration = 30;
+    state.ruleTimeLeft = 30;
     state.rouletteSpinning = false;
-    io.emit('spin_completed', { rule: chosenRule });
+    io.emit('spin_completed', { rule: chosenRule, duration: 30 });
     broadcastState();
   }, 4000);
 }
@@ -148,6 +152,16 @@ function startTimer() {
       if (state.roundTimeLeft > 0) {
         state.roundTimeLeft -= 1;
         state.rouletteTimeLeft -= 1;
+
+        // Conteo regresivo del evento / regla activa
+        if (state.currentRule && state.ruleTimeLeft > 0) {
+          state.ruleTimeLeft -= 1;
+          if (state.ruleTimeLeft <= 0) {
+            logEvent(`⏱️ Fin del evento: ${state.currentRule.name}`);
+            state.currentRule = null;
+            state.ruleTimeLeft = 0;
+          }
+        }
 
         // Check roulette spin trigger
         if (state.roundTimeLeft > 5 && state.rouletteTimeLeft <= 0) {
@@ -214,6 +228,7 @@ function handleRoundEnd() {
     state.phase = 'rest';
     state.restTimeLeft = state.restDuration;
     state.currentRule = null;
+    state.ruleTimeLeft = 0;
     state.bannerAlert = {
       title: `DESCANSO - ROUND ${state.currentRound} TERMINADO`,
       message: '1 minuto de pausa obligatoria en esquinas.',
@@ -223,6 +238,7 @@ function handleRoundEnd() {
   } else {
     state.phase = 'finished';
     state.currentRule = null;
+    state.ruleTimeLeft = 0;
     io.emit('sound_trigger', 'triple_bell');
     state.bannerAlert = {
       title: 'COMBATE FINALIZADO',
@@ -282,6 +298,7 @@ io.on('connection', (socket) => {
       state.roundTimeLeft = state.roundDuration;
       state.rouletteTimeLeft = state.rouletteInterval;
       state.currentRule = null;
+      state.ruleTimeLeft = 0;
       state.winnerDeclaration = null;
       state.bannerAlert = null;
       io.emit('sound_trigger', 'bell');
@@ -318,6 +335,7 @@ io.on('connection', (socket) => {
     state.rouletteTimeLeft = state.rouletteInterval;
     state.phase = 'paused';
     state.currentRule = null;
+    state.ruleTimeLeft = 0;
     logEvent(`🔄 Round ${state.currentRound} reiniciado a 1:30`);
     broadcastState();
   });
@@ -330,6 +348,7 @@ io.on('connection', (socket) => {
       state.rouletteTimeLeft = state.rouletteInterval;
       state.phase = 'paused';
       state.currentRule = null;
+      state.ruleTimeLeft = 0;
       logEvent(`🔢 Salto manual a Round ${state.currentRound}`);
       broadcastState();
     }

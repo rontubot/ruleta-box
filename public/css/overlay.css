@@ -481,6 +481,19 @@ canvas#rouletteWheel {
   box-shadow: 0 0 14px var(--blue-glow);
 }
 
+.rule-countdown-badge {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffd32a;
+  background: rgba(255, 211, 42, 0.15);
+  border: 1px solid rgba(255, 211, 42, 0.4);
+  padding: 1px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
 .rule-title {
   font-family: var(--font-title);
   font-size: 22px;
@@ -501,7 +514,7 @@ canvas#rouletteWheel {
   font-weight: 500;
 }
 
-/* RULE BAR TIMER (15s) */
+/* RULE BAR TIMER (COUNTDOWN) */
 .rule-timer-bar {
   width: 100%;
   height: 3px;
@@ -516,6 +529,52 @@ canvas#rouletteWheel {
   width: 100%;
   background: #ffd32a;
   transition: width 1s linear;
+}
+
+/* COMPACT MODE FOR STREAM (SLIM HUD BAR THAT STAYS UNTIL EVENT FINISHES) */
+.active-rule-card.compact-mode {
+  max-width: 270px;
+  min-width: 200px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(14, 17, 26, 0.95), rgba(8, 10, 16, 0.98));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+}
+
+.active-rule-card.compact-mode .rule-header {
+  margin-bottom: 2px;
+}
+
+.active-rule-card.compact-mode .rule-category-tag {
+  font-size: 8px;
+}
+
+.active-rule-card.compact-mode .rule-points-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+}
+
+.active-rule-card.compact-mode .rule-countdown-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+}
+
+.active-rule-card.compact-mode .rule-title {
+  font-size: 14px;
+  gap: 6px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active-rule-card.compact-mode .rule-description {
+  display: none;
+}
+
+.active-rule-card.compact-mode .rule-timer-bar {
+  margin-top: 4px;
+  height: 3px;
 }
 
 /* 3. CENTER BANNER ALERT (COMPACT POPUP) */

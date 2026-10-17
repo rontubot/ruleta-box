@@ -210,6 +210,167 @@
       text-align: right;
     }
 
+    /* TV EVENT CARD (BELOW CLOCK - ALWAYS VISIBLE WHILE EVENT IS ACTIVE) */
+    .tv-event-card {
+      width: 75vw;
+      max-width: 1200px;
+      margin-top: clamp(10px, 1.8vh, 22px);
+      background: linear-gradient(135deg, rgba(16, 20, 32, 0.95), rgba(9, 11, 18, 0.98));
+      border: 2px solid #ffd32a;
+      border-radius: 16px;
+      padding: clamp(8px, 1.4vh, 16px) clamp(14px, 1.8vw, 24px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 211, 42, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.4s ease;
+    }
+
+    .tv-event-card.team-red {
+      border-color: #ff1e56;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 30, 86, 0.4);
+    }
+
+    .tv-event-card.team-blue {
+      border-color: #00d2d3;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 210, 211, 0.4);
+    }
+
+    .tv-event-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tv-event-badge {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: clamp(11px, 1.3vw, 16px);
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #ffd32a;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tv-event-countdown {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: clamp(13px, 1.6vw, 20px);
+      font-weight: 900;
+      color: #fff;
+      background: rgba(255, 211, 42, 0.2);
+      border: 1px solid rgba(255, 211, 42, 0.5);
+      padding: 3px 12px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    .tv-event-countdown.urgent {
+      background: rgba(255, 71, 87, 0.3);
+      border-color: #ff4757;
+      color: #ff4757;
+      animation: urgentPulse 0.5s infinite alternate;
+    }
+
+    .tv-event-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .tv-event-main {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tv-event-icon {
+      font-size: clamp(22px, 3.2vw, 40px);
+      line-height: 1;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+    }
+
+    .tv-event-texts {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .tv-event-title {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: clamp(16px, 2.4vw, 30px);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.1;
+    }
+
+    .tv-event-desc {
+      font-size: clamp(11px, 1.2vw, 15px);
+      color: #ced6e0;
+      font-weight: 600;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tv-event-pts {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: clamp(12px, 1.6vw, 20px);
+      font-weight: 900;
+      padding: 4px 12px;
+      border-radius: 8px;
+      background: #ffd32a;
+      color: #0b0c10;
+      white-space: nowrap;
+      box-shadow: 0 0 15px rgba(255, 211, 42, 0.4);
+    }
+
+    /* TV EVENT PROGRESS BAR */
+    .tv-event-progress-track {
+      width: 100%;
+      height: clamp(5px, 0.8vh, 10px);
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .tv-event-progress-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ffd32a, #ff4757);
+      transition: width 1s linear;
+      box-shadow: 0 0 10px rgba(255, 211, 42, 0.7);
+    }
+
+    /* NEXT SPIN PREVIEW (WHEN NO EVENT ACTIVE) */
+    .tv-next-spin-pill {
+      margin-top: clamp(8px, 1.4vh, 18px);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: clamp(5px, 0.8vh, 10px) clamp(14px, 1.8vw, 24px);
+      border-radius: 30px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: clamp(13px, 1.4vw, 18px);
+      color: #a4b0be;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      backdrop-filter: blur(8px);
+    }
+
+    .tv-next-spin-pill strong {
+      color: #ffd32a;
+    }
+
     /* ANIMATIONS */
     @keyframes urgentPulse {
       from { transform: scale(1); }
@@ -237,6 +398,33 @@
     <div class="progress-track">
       <div class="progress-fill" id="tvProgressFill" style="width: 100%;"></div>
     </div>
+
+    <!-- EVENT / RULE DISPLAY BELOW CLOCK -->
+    <div class="tv-event-card" id="tvEventCard" style="display: none;">
+      <div class="tv-event-header">
+        <span class="tv-event-badge" id="tvEventBadge">⚡ EVENTO ACTIVO</span>
+        <span class="tv-event-countdown" id="tvEventCountdown">⏱️ QUEDAN 30s</span>
+      </div>
+      <div class="tv-event-body">
+        <div class="tv-event-main">
+          <span class="tv-event-icon" id="tvEventIcon">🥊</span>
+          <div class="tv-event-texts">
+            <h2 class="tv-event-title" id="tvEventTitle">EL MANCO</h2>
+            <p class="tv-event-desc" id="tvEventDesc">Una mano a la espalda o pegada al cuerpo.</p>
+          </div>
+        </div>
+        <div class="tv-event-pts" id="tvEventPts">+10 PTS</div>
+      </div>
+      <div class="tv-event-progress-track">
+        <div class="tv-event-progress-fill" id="tvEventProgressFill" style="width: 100%;"></div>
+      </div>
+    </div>
+
+    <!-- NEXT EVENT PREVIEW (WHEN NO EVENT ACTIVE) -->
+    <div class="tv-next-spin-pill" id="tvNextSpinPill" style="display: none;">
+      <span>🎲 Próximo Evento de Ruleta en:</span>
+      <strong id="tvNextSpinSec">30s</strong>
+    </div>
   </main>
 
   <!-- TV FOOTER (FIGHTERS) -->
@@ -254,6 +442,18 @@
     const tvProgressFill = document.getElementById('tvProgressFill');
     const tvRedName = document.getElementById('tvRedName');
     const tvBlueName = document.getElementById('tvBlueName');
+
+    // TV Event elements
+    const tvEventCard = document.getElementById('tvEventCard');
+    const tvEventBadge = document.getElementById('tvEventBadge');
+    const tvEventCountdown = document.getElementById('tvEventCountdown');
+    const tvEventIcon = document.getElementById('tvEventIcon');
+    const tvEventTitle = document.getElementById('tvEventTitle');
+    const tvEventDesc = document.getElementById('tvEventDesc');
+    const tvEventPts = document.getElementById('tvEventPts');
+    const tvEventProgressFill = document.getElementById('tvEventProgressFill');
+    const tvNextSpinPill = document.getElementById('tvNextSpinPill');
+    const tvNextSpinSec = document.getElementById('tvNextSpinSec');
 
     function formatTime(sec) {
       const m = Math.floor(sec / 60);
@@ -319,6 +519,47 @@
         tvRoundTag.textContent = 'LISTOS PARA EL ROUND 1';
         tvClock.textContent = '01:30';
         tvProgressFill.style.width = '100%';
+      }
+
+      // Event Display Below Clock (Always visible during active event)
+      if (state.currentRule && state.ruleTimeLeft > 0 && (state.phase === 'fighting' || state.phase === 'paused')) {
+        tvEventCard.style.display = 'flex';
+        tvNextSpinPill.style.display = 'none';
+
+        tvEventCard.className = 'tv-event-card';
+        if (state.currentRule.targetTeam === 'red') {
+          tvEventCard.classList.add('team-red');
+          tvEventBadge.innerHTML = '⚡ RETO EXCLUSIVO: ESQUINA ROJA';
+        } else if (state.currentRule.targetTeam === 'blue') {
+          tvEventCard.classList.add('team-blue');
+          tvEventBadge.innerHTML = '⚡ RETO EXCLUSIVO: ESQUINA AZUL';
+        } else {
+          tvEventBadge.innerHTML = '⚡ EVENTO ACTIVO DE RULETA';
+        }
+
+        tvEventIcon.textContent = state.currentRule.icon ? state.currentRule.icon.split(' ')[0] : '🥊';
+        tvEventTitle.textContent = state.currentRule.fullName || state.currentRule.name;
+        tvEventDesc.textContent = state.currentRule.description || '';
+        tvEventPts.textContent = state.currentRule.pts > 0 ? `+${state.currentRule.pts} PTS` : 'RELEVO';
+
+        tvEventCountdown.textContent = `⏱️ QUEDAN ${state.ruleTimeLeft}s`;
+        if (state.ruleTimeLeft <= 5) {
+          tvEventCountdown.classList.add('urgent');
+        } else {
+          tvEventCountdown.classList.remove('urgent');
+        }
+
+        const ruleDuration = state.ruleDuration || 30;
+        const rulePct = (state.ruleTimeLeft / ruleDuration) * 100;
+        tvEventProgressFill.style.width = `${rulePct}%`;
+      } else {
+        tvEventCard.style.display = 'none';
+        if (state.phase === 'fighting' && state.rouletteTimeLeft > 0) {
+          tvNextSpinPill.style.display = 'flex';
+          tvNextSpinSec.textContent = `${state.rouletteTimeLeft}s`;
+        } else {
+          tvNextSpinPill.style.display = 'none';
+        }
       }
     });
   </script>

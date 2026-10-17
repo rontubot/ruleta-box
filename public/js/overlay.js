@@ -188,7 +188,8 @@ function displayRuleCard(rule) {
   ruleNameEl.textContent = rule.fullName || rule.name;
   ruleDescEl.textContent = rule.description;
 
-  // Show active rule card on bottom-right
+  // Show active rule card on bottom-right (full presentation)
+  activeRuleCardEl.classList.remove('compact-mode');
   activeRuleCardEl.classList.add('visible');
 
   // Update top persistent rule pill
@@ -198,10 +199,12 @@ function displayRuleCard(rule) {
     topActiveRulePillEl.innerHTML = `${rule.icon ? rule.icon.split(' ')[0] : '🥊'} ${teamPrefix}${rule.fullName || rule.name} • ${rule.pts > 0 ? '+' + rule.pts + ' PTS' : 'RELEVO'}`;
   }
 
-  // Stay visible for 7.5 seconds so it can be read comfortably, then fade out!
+  // Stay fully visible for 7.5 seconds so it can be read comfortably, then collapse to mini HUD bar until event finishes!
   if (ruleCardHideTimeout) clearTimeout(ruleCardHideTimeout);
   ruleCardHideTimeout = setTimeout(() => {
-    activeRuleCardEl.classList.remove('visible');
+    if (activeRuleCardEl.classList.contains('visible')) {
+      activeRuleCardEl.classList.add('compact-mode');
+    }
   }, 7500);
 }
 
@@ -417,28 +420,37 @@ function updateOverlay(state) {
     roundProgressFillEl.style.width = `100%`;
   }
 
-  // Spin countdown & progress bar
-  if (ruleTimerFillEl) {
-    if (state.phase === 'fighting') {
-      const rProgress = (state.rouletteTimeLeft / state.rouletteInterval) * 100;
-      ruleTimerFillEl.style.width = `${rProgress}%`;
-    } else {
-      ruleTimerFillEl.style.width = `0%`;
-    }
-  }
+  // Active Rule & Event Countdown Bar
+  const ruleCountdownBadgeEl = document.getElementById('ruleCountdownBadge');
+  const isRuleActive = state.currentRule && state.ruleTimeLeft > 0 && (state.phase === 'fighting' || state.phase === 'paused');
 
-  // Active Rule & Top persistent pill
-  if (state.currentRule && state.phase === 'fighting') {
+  if (isRuleActive) {
+    const duration = state.ruleDuration || 30;
+    const rProgress = (state.ruleTimeLeft / duration) * 100;
+    if (ruleTimerFillEl) {
+      ruleTimerFillEl.style.width = `${rProgress}%`;
+    }
+    if (ruleCountdownBadgeEl) {
+      ruleCountdownBadgeEl.textContent = `⏳ ${state.ruleTimeLeft}s`;
+    }
+
     if (topActiveRulePillEl) {
       topActiveRulePillEl.style.display = 'block';
-      topActiveRulePillEl.innerHTML = `${state.currentRule.icon ? state.currentRule.icon.split(' ')[0] : '🥊'} ${state.currentRule.name} • ${state.currentRule.pts > 0 ? '+' + state.currentRule.pts + ' PTS' : 'RELEVO'}`;
+      const isRed = state.currentRule.targetTeam === 'red';
+      const isBlue = state.currentRule.targetTeam === 'blue';
+      const teamPrefix = isRed ? '🔴 ' : isBlue ? '🔵 ' : '';
+      topActiveRulePillEl.innerHTML = `${state.currentRule.icon ? state.currentRule.icon.split(' ')[0] : '🥊'} ${teamPrefix}${state.currentRule.name} • ⏳ ${state.ruleTimeLeft}s`;
     }
   } else {
+    if (ruleTimerFillEl) {
+      ruleTimerFillEl.style.width = `0%`;
+    }
     if (topActiveRulePillEl) {
       topActiveRulePillEl.style.display = 'none';
     }
+    // When event ends, completely hide active rule card (both full and compact mode)
+    activeRuleCardEl.classList.remove('visible', 'compact-mode');
     if (state.phase === 'rest' || state.phase === 'finished') {
-      activeRuleCardEl.classList.remove('visible');
       if (rouletteContainerEl) rouletteContainerEl.classList.remove('visible');
     }
   }

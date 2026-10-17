@@ -42,6 +42,8 @@ const adminRuleTitle = document.getElementById('adminRuleTitle');
 const adminRuleBadge = document.getElementById('adminRuleBadge');
 const adminRuleDesc = document.getElementById('adminRuleDesc');
 const adminSpinCountdown = document.getElementById('adminSpinCountdown');
+const adminEventTimeLeft = document.getElementById('adminEventTimeLeft');
+const adminEventProgressFill = document.getElementById('adminEventProgressFill');
 const forceSpinBtn = document.getElementById('forceSpinBtn');
 const forceRuleBtn = document.getElementById('forceRuleBtn');
 const specificRuleSelect = document.getElementById('specificRuleSelect');
@@ -324,19 +326,37 @@ socket.on('state_update', (state) => {
     bothBonusBtn.textContent = `🤝 Ambos Cumplieron el Reto (+${activePts} a Cada Uno)`;
   }
 
-  // Rule preview
-  if (state.currentRule) {
+  // Rule preview & Persistent Event Timer Bar (Always visible in Admin)
+  if (state.currentRule && state.ruleTimeLeft > 0 && (state.phase === 'fighting' || state.phase === 'paused')) {
     adminRuleTitle.textContent = `${state.currentRule.icon || '🥊'} ${state.currentRule.fullName || state.currentRule.name}`;
     adminRuleBadge.textContent = state.currentRule.pts > 0 ? `+${state.currentRule.pts} PTS` : 'RELEVO';
     adminRuleDesc.textContent = state.currentRule.description;
-  } else if (state.phase === 'rest') {
-    adminRuleTitle.textContent = '⏳ Minuto de Descanso';
-    adminRuleBadge.textContent = 'PAUSA';
-    adminRuleDesc.textContent = 'Descanso obligatorio entre asaltos. Al llegar a 10s suena "Segundos Afuera".';
-  } else if (state.phase === 'finished') {
-    adminRuleTitle.textContent = '🏆 Combate Finalizado';
-    adminRuleBadge.textContent = 'FIN';
-    adminRuleDesc.textContent = 'Define el ganador en el panel de veredicto y haz clic en "Proclamar Ganador al Stream".';
+
+    if (adminEventTimeLeft && adminEventProgressFill) {
+      adminEventTimeLeft.textContent = `⏳ ${state.ruleTimeLeft}s restantes`;
+      const ruleDuration = state.ruleDuration || 30;
+      const pct = (state.ruleTimeLeft / ruleDuration) * 100;
+      adminEventProgressFill.style.width = `${pct}%`;
+    }
+  } else {
+    if (adminEventTimeLeft && adminEventProgressFill) {
+      adminEventTimeLeft.textContent = state.phase === 'fighting' ? `Próximo giro en ${state.rouletteTimeLeft}s` : 'Sin evento activo';
+      adminEventProgressFill.style.width = '0%';
+    }
+
+    if (state.phase === 'rest') {
+      adminRuleTitle.textContent = '⏳ Minuto de Descanso';
+      adminRuleBadge.textContent = 'PAUSA';
+      adminRuleDesc.textContent = 'Descanso obligatorio entre asaltos. Al llegar a 10s suena "Segundos Afuera".';
+    } else if (state.phase === 'finished') {
+      adminRuleTitle.textContent = '🏆 Combate Finalizado';
+      adminRuleBadge.textContent = 'FIN';
+      adminRuleDesc.textContent = 'Define el ganador en el panel de veredicto y haz clic en "Proclamar Ganador al Stream".';
+    } else {
+      adminRuleTitle.textContent = '🥊 Esperando inicio / siguiente giro';
+      adminRuleBadge.textContent = 'RULETA';
+      adminRuleDesc.textContent = 'Cada 30 segundos la ruleta gira automáticamente para cambiar las condiciones reglamentarias del combate.';
+    }
   }
 
   // Event Log
