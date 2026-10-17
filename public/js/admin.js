@@ -280,7 +280,7 @@ socket.on('state_update', (state) => {
   } else {
     adminPhaseBadge.textContent = 'INACTIVO';
     adminTimerDigits.textContent = '01:30';
-    adminSpinCountdown.textContent = '15s';
+    adminSpinCountdown.textContent = '30s';
   }
 
   // Bonus buttons text with active rule points

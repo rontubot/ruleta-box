@@ -13,7 +13,7 @@
   <header class="admin-header">
     <div class="brand-section">
       <h1>🥊 LA VELADA DEL CAOS • Panel de Moderación y Control</h1>
-      <p>Control central de rounds, cronómetro de descanso, ruleta automática cada 15s y veredicto de jueces</p>
+      <p>Control central de rounds, cronómetro de descanso, ruleta automática cada 30s y veredicto de jueces</p>
     </div>
     <div class="header-actions">
       <button id="copyObsLinkBtn" class="btn btn-primary" style="font-size: 13px;">
@@ -177,19 +177,19 @@
 
       <!-- ROULETTE CONTROL & ACTIVE RULE -->
       <section class="card">
-        <h2 class="card-title">🎰 Ruleta del Caos (Giro cada 15s)</h2>
+        <h2 class="card-title">🎰 Ruleta del Caos (Giro cada 30s)</h2>
         
         <div class="active-rule-preview">
           <h4>
             <span id="adminRuleTitle">🥊 Esperando inicio</span>
             <span class="rule-points-badge" id="adminRuleBadge" style="font-size: 12px; padding: 2px 8px; border-radius: 6px; background: #ffd32a; color: #000;">+10 PTS</span>
           </h4>
-          <p id="adminRuleDesc">Cada 15 segundos la ruleta gira automáticamente para cambiar las condiciones reglamentarias del combate.</p>
+          <p id="adminRuleDesc">Cada 30 segundos la ruleta gira automáticamente para cambiar las condiciones reglamentarias del combate.</p>
         </div>
 
         <div class="spin-progress-box">
           <span>Tiempo para el siguiente giro:</span>
-          <strong id="adminSpinCountdown" style="color: var(--gold); font-size: 18px;">15s</strong>
+          <strong id="adminSpinCountdown" style="color: var(--gold); font-size: 18px;">30s</strong>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">

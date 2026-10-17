@@ -40,8 +40,8 @@ Sistema web en tiempo real desarrollado para eventos de boxeo en vivo con ruleta
 - **Campana de Boxeo**: Sonidos reales de campana metálica al inicio y cierre de cada asalto.
 - **Tag Team**: Al sonar la campana de nuevo asalto, se exige el cambio de peleador obligatorio.
 
-### 🎰 Ruleta del Caos (Giro cada 15 segundos)
-- Gira de manera automática y obligatoria cada **15 segundos** (6 giros por round = 90s).
+### 🎰 Ruleta del Caos (Giro cada 30 segundos)
+- Gira de manera automática y obligatoria cada **30 segundos** (3 giros por round = 90s).
 - Rueda animada en Canvas con efecto desacelerado y clics mecánicos.
 - **Modalidad 1v1**: 6 reglas de combate (+10 y +15 pts):
   1. *El Manco (+10 pts)*: Una mano a la espalda.
