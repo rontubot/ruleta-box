@@ -3,6 +3,7 @@ const socket = io();
 
 // UI Elements
 const matchModeSelect = document.getElementById('matchModeSelect');
+const maxRoundsSelect = document.getElementById('maxRoundsSelect');
 const redFighterInput = document.getElementById('redFighterInput');
 const blueFighterInput = document.getElementById('blueFighterInput');
 const saveConfigBtn = document.getElementById('saveConfigBtn');
@@ -99,13 +100,19 @@ if (copyObsLinkBtn) {
 // Save match configuration
 saveConfigBtn.addEventListener('click', () => {
   const mode = matchModeSelect.value;
+  const maxRounds = maxRoundsSelect ? Number(maxRoundsSelect.value) : (mode === 'tag_team' ? 5 : 3);
   const redFighter = redFighterInput.value.trim() || 'Esquina Roja';
   const blueFighter = blueFighterInput.value.trim() || 'Esquina Azul';
 
-  socket.emit('update_config', { mode, redFighter, blueFighter });
+  socket.emit('update_config', { mode, maxRounds, redFighter, blueFighter });
 });
 
 matchModeSelect.addEventListener('change', () => {
+  if (matchModeSelect.value === 'tag_team') {
+    if (maxRoundsSelect) maxRoundsSelect.value = '5';
+  } else {
+    if (maxRoundsSelect) maxRoundsSelect.value = '3';
+  }
   updateRuleSelectOptions(matchModeSelect.value);
 });
 
@@ -228,6 +235,9 @@ socket.on('state_update', (state) => {
   if (matchModeSelect.value !== state.mode) {
     matchModeSelect.value = state.mode;
     updateRuleSelectOptions(state.mode);
+  }
+  if (maxRoundsSelect && state.maxRounds) {
+    maxRoundsSelect.value = String(state.maxRounds);
   }
 
   // Names & Scores

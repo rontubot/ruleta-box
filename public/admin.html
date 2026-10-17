@@ -43,8 +43,16 @@
         <div class="form-group">
           <label>Modalidad de Pelea</label>
           <select id="matchModeSelect" class="form-select">
-            <option value="1v1">1v1 (Individual - 6 Reglas de Combate)</option>
-            <option value="tag_team">Tag Team (Por Equipos - Incluye Relevos y Estructurales)</option>
+            <option value="1v1">1v1 (Individual • 3 Rounds)</option>
+            <option value="tag_team">Tag Team (Por Equipos • 5 Rounds)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Total de Asaltos (Rounds)</label>
+          <select id="maxRoundsSelect" class="form-select">
+            <option value="3">3 Rounds (Formato 1v1)</option>
+            <option value="5" selected>5 Rounds (Formato Tag Team)</option>
+            <option value="4">4 Rounds</option>
           </select>
         </div>
         <div class="form-group">
@@ -55,7 +63,7 @@
           <label>Peleador(es) Esquina Azul</label>
           <input type="text" id="blueFighterInput" class="form-input" placeholder="Ej: Lucas 'El Rayo' / Equipo Beta">
         </div>
-        <button id="saveConfigBtn" class="btn btn-dark btn-block">💾 Guardar Nombres y Modo</button>
+        <button id="saveConfigBtn" class="btn btn-dark btn-block">💾 Guardar Configuración</button>
       </section>
 
       <!-- CLOCK & ROUND CONTROLS -->
@@ -64,7 +72,7 @@
         
         <div class="match-status-bar">
           <div>
-            <div class="status-round-tag" id="adminRoundTag">ROUND 1 / 3</div>
+            <div class="status-round-tag" id="adminRoundTag">ROUND 1 / 5</div>
             <div class="status-phase-badge" id="adminPhaseBadge">INACTIVO</div>
           </div>
           <div class="status-timer-big" id="adminTimerDigits">01:30</div>
@@ -78,10 +86,12 @@
         </div>
 
         <label style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Cambiar de Round:</label>
-        <div class="round-jump-row">
+        <div class="round-jump-row" id="roundJumpRow">
           <button class="btn btn-dark" onclick="jumpToRound(1)">R1</button>
           <button class="btn btn-dark" onclick="jumpToRound(2)">R2</button>
           <button class="btn btn-dark" onclick="jumpToRound(3)">R3</button>
+          <button class="btn btn-dark" onclick="jumpToRound(4)">R4</button>
+          <button class="btn btn-dark" onclick="jumpToRound(5)">R5</button>
         </div>
       </section>
 

@@ -31,14 +31,14 @@ app.get('/timer', (req, res) => {
 });
 
 // State Management
-function createInitialState() {
+function createInitialState(mode = '1v1') {
   return {
-    mode: '1v1', // '1v1' | 'tag_team'
+    mode: mode, // '1v1' | 'tag_team'
     redFighter: 'Esquina Roja',
     blueFighter: 'Esquina Azul',
     phase: 'idle', // 'idle' | 'fighting' | 'paused' | 'rest' | 'protection' | 'finished'
     currentRound: 1,
-    maxRounds: 3,
+    maxRounds: mode === 'tag_team' ? 5 : 3,
     roundDuration: 90,
     roundTimeLeft: 90,
     restDuration: 60,
@@ -230,7 +230,7 @@ function handleRoundEnd() {
       type: 'info'
     };
     io.emit('banner_alert', state.bannerAlert);
-    logEvent('🏆 3 Rounds concluidos. Decisión de los jueces pendiente.');
+    logEvent(`🏆 ${state.maxRounds} Rounds concluidos. Decisión de los jueces pendiente.`);
   }
 }
 
@@ -263,10 +263,15 @@ io.on('connection', (socket) => {
   socket.emit('state_update', state);
 
   socket.on('update_config', (data) => {
-    if (data.mode) state.mode = data.mode;
+    if (data.mode) {
+      state.mode = data.mode;
+      state.maxRounds = data.maxRounds ? Number(data.maxRounds) : (data.mode === 'tag_team' ? 5 : 3);
+    } else if (data.maxRounds) {
+      state.maxRounds = Number(data.maxRounds);
+    }
     if (data.redFighter !== undefined) state.redFighter = data.redFighter;
     if (data.blueFighter !== undefined) state.blueFighter = data.blueFighter;
-    logEvent(`⚙️ Configuración actualizada: Modo ${state.mode}, ${state.redFighter} vs ${state.blueFighter}`);
+    logEvent(`⚙️ Configuración: Modo ${state.mode.toUpperCase()} (${state.maxRounds} Rounds), ${state.redFighter} vs ${state.blueFighter}`);
     broadcastState();
   });
 
@@ -447,8 +452,7 @@ io.on('connection', (socket) => {
     const prevMode = state.mode;
     const prevRed = state.redFighter;
     const prevBlue = state.blueFighter;
-    state = createInitialState();
-    state.mode = prevMode;
+    state = createInitialState(prevMode);
     state.redFighter = prevRed;
     state.blueFighter = prevBlue;
     logEvent('🔄 Combate reiniciado por completo.');
