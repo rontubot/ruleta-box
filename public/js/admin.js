@@ -170,14 +170,20 @@ function copyToClipboard(text, btnEl, successText, defaultText) {
   }
 }
 
-// Dual-Dispatch Combat Actions (Emits to WebSocket AND sends to REST API)
+// Smart Dispatch Combat Actions (Sends via WebSocket if connected, falls back to HTTP POST)
 function dispatchCombatAction(action, payload = {}) {
-  socket.emit(action, payload);
-  fetch('/api/action', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-    body: JSON.stringify({ action, payload })
-  }).catch(() => {});
+  const actionId = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const fullPayload = (typeof payload === 'object' && payload !== null) ? { ...payload, actionId } : { data: payload, actionId };
+
+  if (socket && socket.connected) {
+    socket.emit(action, fullPayload);
+  } else {
+    fetch('/api/action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+      body: JSON.stringify({ action, payload: fullPayload })
+    }).catch(() => {});
+  }
 }
 
 // Save match configuration

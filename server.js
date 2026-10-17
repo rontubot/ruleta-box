@@ -314,7 +314,17 @@ function handleRestEnd() {
 }
 
 // Central Action Processor (Handles both WebSockets and HTTP REST API actions)
+const processedActionIds = new Set();
 function processCombatAction(action, data = {}) {
+  const actionId = (data && data.actionId) || (data && data.payload && data.payload.actionId);
+  if (actionId) {
+    if (processedActionIds.has(actionId)) {
+      return; // Already processed! Deduplicate
+    }
+    processedActionIds.add(actionId);
+    setTimeout(() => processedActionIds.delete(actionId), 6000);
+  }
+
   switch (action) {
     case 'update_config':
       if (data.mode) {
