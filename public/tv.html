@@ -6,6 +6,13 @@
   <title>La Velada del Caos - Pantalla TV / Cronómetro</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@800;900&family=Chakra+Petch:wght@700;800;900&family=Inter:wght@600;700;800&display=swap">
   <script src="/socket.io/socket.io.js"></script>
+  <script>
+    if (typeof io === 'undefined') {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
+      document.head.appendChild(s);
+    }
+  </script>
   <style>
     * {
       box-sizing: border-box;
@@ -384,13 +391,14 @@
   </style>
 </head>
 <body>
+  <div id="tvWarningBanner" style="display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: #c0392b; color: #fff; padding: 12px 20px; text-align: center; font-weight: 700; font-size: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);"></div>
 
   <!-- TV TOP BAR -->
   <header class="tv-header">
     <div style="display: flex; align-items: center; gap: 14px;">
       <div class="event-title">🥊 LA VELADA DEL CAOS</div>
-      <div id="tvConnBadge" style="font-family: 'Chakra Petch', sans-serif; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px; background: rgba(46, 213, 115, 0.2); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.4); text-transform: uppercase; letter-spacing: 1px;">
-        🟢 EN VIVO
+      <div id="tvConnBadge" style="font-family: 'Chakra Petch', sans-serif; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px; background: rgba(255, 211, 42, 0.2); color: #ffd32a; border: 1px solid rgba(255, 211, 42, 0.4); text-transform: uppercase; letter-spacing: 1px;">
+        🟡 CONECTANDO...
       </div>
     </div>
     <div class="phase-badge" id="tvPhaseBadge">EN ESPERA</div>
@@ -439,43 +447,10 @@
   </footer>
 
   <script>
-    const socket = io({
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 20000
-    });
+    let socket = null;
+    let currentState = null;
 
     const tvConnBadge = document.getElementById('tvConnBadge');
-    socket.on('connect', () => {
-      if (tvConnBadge) {
-        tvConnBadge.style.background = 'rgba(46, 213, 115, 0.2)';
-        tvConnBadge.style.color = '#2ed573';
-        tvConnBadge.style.borderColor = 'rgba(46, 213, 115, 0.4)';
-        tvConnBadge.textContent = '🟢 EN VIVO';
-      }
-    });
-
-    socket.on('disconnect', () => {
-      if (tvConnBadge) {
-        tvConnBadge.style.background = 'rgba(255, 71, 87, 0.3)';
-        tvConnBadge.style.color = '#ff4757';
-        tvConnBadge.style.borderColor = '#ff4757';
-        tvConnBadge.textContent = '🔴 RECONECTANDO...';
-      }
-    });
-
-    socket.on('connect_error', () => {
-      if (tvConnBadge) {
-        tvConnBadge.style.background = 'rgba(255, 71, 87, 0.3)';
-        tvConnBadge.style.color = '#ff4757';
-        tvConnBadge.style.borderColor = '#ff4757';
-        tvConnBadge.textContent = '⚠️ SIN CONEXIÓN';
-      }
-    });
-
     const tvPhaseBadge = document.getElementById('tvPhaseBadge');
     const tvRoundTag = document.getElementById('tvRoundTag');
     const tvClock = document.getElementById('tvClock');
@@ -495,6 +470,84 @@
     const tvNextSpinPill = document.getElementById('tvNextSpinPill');
     const tvNextSpinSec = document.getElementById('tvNextSpinSec');
 
+    function updateConnBadge(connected, count = 1, customText = null) {
+      if (!tvConnBadge) return;
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const hostLabel = window.location.host || 'servidor';
+
+      if (connected) {
+        if (isLocalhost) {
+          tvConnBadge.style.background = 'rgba(255, 165, 2, 0.2)';
+          tvConnBadge.style.color = '#ffa502';
+          tvConnBadge.style.borderColor = 'rgba(255, 165, 2, 0.5)';
+          tvConnBadge.innerHTML = `⚠️ EN LOCALHOST (${count} ${count === 1 ? 'disp.' : 'disp.'}) • Solo esta PC`;
+        } else {
+          tvConnBadge.style.background = 'rgba(46, 213, 115, 0.2)';
+          tvConnBadge.style.color = '#2ed573';
+          tvConnBadge.style.borderColor = 'rgba(46, 213, 115, 0.4)';
+          tvConnBadge.innerHTML = `🟢 EN VIVO (${count} ${count === 1 ? 'pantalla' : 'pantallas'}) • ${hostLabel}`;
+        }
+      } else {
+        tvConnBadge.style.background = 'rgba(255, 71, 87, 0.3)';
+        tvConnBadge.style.color = '#ff4757';
+        tvConnBadge.style.borderColor = '#ff4757';
+        tvConnBadge.innerHTML = `🔴 ${customText || 'DESCONECTADO'} • ${hostLabel}`;
+      }
+    }
+
+    // Check environment warnings
+    const warnBanner = document.getElementById('tvWarningBanner');
+    if (window.location.protocol === 'file:') {
+      if (warnBanner) {
+        warnBanner.style.display = 'block';
+        warnBanner.innerHTML = '❌ <strong>ERROR:</strong> Has abierto este archivo como <code>file:///</code>. Para que funcione y se sincronice, abre en el navegador la URL: <a href="https://ruleta-box-production.up.railway.app/tv" style="color: #ffd32a; font-weight: bold; text-decoration: underline;">https://ruleta-box-production.up.railway.app/tv</a>';
+      }
+    } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      if (warnBanner) {
+        warnBanner.style.display = 'block';
+        warnBanner.style.background = '#d35400';
+        warnBanner.innerHTML = '⚠️ <strong>AVISO:</strong> Estás en <code>localhost</code> (solo esta máquina). Si vas a conectar otra PC o TV, ambas deben entrar a: <a href="https://ruleta-box-production.up.railway.app/tv" style="color: #ffd32a; font-weight: bold; text-decoration: underline;">https://ruleta-box-production.up.railway.app/tv</a> <button onclick="this.parentElement.style.display=\'none\'" style="margin-left: 12px; background: rgba(0,0,0,0.5); border: 1px solid #fff; color: #fff; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Cerrar aviso</button>';
+      }
+    }
+
+    function initSocket() {
+      if (typeof io !== 'undefined' && !socket) {
+        try {
+          socket = io({
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: Infinity,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 20000
+          });
+
+          socket.on('connect', () => {
+            updateConnBadge(true, (currentState && currentState.connectedDevices) || 1);
+          });
+
+          socket.on('disconnect', () => {
+            updateConnBadge(false, 0, 'RECONECTANDO...');
+          });
+
+          socket.on('connect_error', () => {
+            // Handled gracefully by HTTP polling
+          });
+
+          socket.on('state_update', (state) => {
+            currentState = state;
+            renderTV(state);
+            updateConnBadge(true, state.connectedDevices || 1);
+          });
+        } catch (e) {
+          console.warn('Socket.IO connection warning:', e);
+        }
+      }
+    }
+
+    initSocket();
+    setTimeout(initSocket, 800);
+
     function formatTime(sec) {
       const m = Math.floor(sec / 60);
       const s = sec % 60;
@@ -505,13 +558,7 @@
       if (!state) return;
 
       // Update connection indicator with device count
-      if (tvConnBadge) {
-        const count = state.connectedDevices || 1;
-        tvConnBadge.style.background = 'rgba(46, 213, 115, 0.2)';
-        tvConnBadge.style.color = '#2ed573';
-        tvConnBadge.style.borderColor = 'rgba(46, 213, 115, 0.4)';
-        tvConnBadge.textContent = `🟢 EN VIVO (${count} ${count === 1 ? 'dispositivo' : 'dispositivos'})`;
-      }
+      updateConnBadge(true, state.connectedDevices || 1);
 
       // Fighters
       tvRedName.textContent = `🔴 ${state.redFighter || 'Esquina Roja'}`;
@@ -614,20 +661,25 @@
       }
     }
 
-    socket.on('state_update', (state) => {
-      renderTV(state);
-    });
-
     // Dual-Layer HTTP Sync Fallback: fetch state immediately and poll every 1s
     async function syncStateFromAPI() {
+      if (window.location.protocol === 'file:') return;
       try {
         const res = await fetch('/api/state?t=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
           const st = await res.json();
+          currentState = st;
           renderTV(st);
+          updateConnBadge(true, st.connectedDevices || 1);
+        } else {
+          if (!socket || !socket.connected) {
+            updateConnBadge(false, 0, 'ERROR DE SERVIDOR');
+          }
         }
       } catch (err) {
-        // network silent retry
+        if (!socket || !socket.connected) {
+          updateConnBadge(false, 0, 'SIN CONEXIÓN AL SERVIDOR');
+        }
       }
     }
     syncStateFromAPI();

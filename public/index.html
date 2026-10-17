@@ -6,6 +6,13 @@
   <title>La Velada del Caos - Overlay Stream</title>
   <link rel="stylesheet" href="/css/overlay.css">
   <script src="/socket.io/socket.io.js"></script>
+  <script>
+    if (typeof io === 'undefined') {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
+      document.head.appendChild(s);
+    }
+  </script>
 </head>
 <body>
 

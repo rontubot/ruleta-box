@@ -13,7 +13,17 @@ const currentServerDomain = document.getElementById('currentServerDomain');
 const adminConnBadge = document.getElementById('adminConnBadge');
 
 if (currentServerDomain) {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   currentServerDomain.textContent = window.location.origin;
+  if (isLocal) {
+    const parentContainer = currentServerDomain.closest('div');
+    if (parentContainer) {
+      const alertDiv = document.createElement('div');
+      alertDiv.style.cssText = 'background: rgba(230, 126, 34, 0.2); border: 1px solid #e67e22; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 12px; color: #f39c12; line-height: 1.4;';
+      alertDiv.innerHTML = '⚠️ <strong>AVISO MULTI-PC / TV:</strong> Estás navegando en <code>localhost</code> (solo esta computadora). Para que tu <strong>otra PC, Smart TV o celular</strong> se sincronicen en vivo, todos deben abrir la URL pública en Railway: <a href="https://ruleta-box-production.up.railway.app/admin" style="color: #ffd32a; font-weight: bold; text-decoration: underline;">https://ruleta-box-production.up.railway.app/admin</a>';
+      parentContainer.appendChild(alertDiv);
+    }
+  }
 }
 
 socket.on('connect', () => {
@@ -121,7 +131,8 @@ adminAudioBtn.addEventListener('click', () => {
 const copyObsLinkBtn = document.getElementById('copyObsLinkBtn');
 if (copyObsLinkBtn) {
   copyObsLinkBtn.addEventListener('click', () => {
-    const obsUrl = `${window.location.origin}/overlay?obs=1`;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const obsUrl = isLocal ? 'https://ruleta-box-production.up.railway.app/overlay?obs=1' : `${window.location.origin}/overlay?obs=1`;
     copyToClipboard(obsUrl, copyObsLinkBtn, '✅ ¡URL OBS Copiada!', '📋 Copiar URL para OBS');
   });
 }
@@ -130,7 +141,8 @@ if (copyObsLinkBtn) {
 const copyTvLinkBtn = document.getElementById('copyTvLinkBtn');
 if (copyTvLinkBtn) {
   copyTvLinkBtn.addEventListener('click', () => {
-    const tvUrl = `${window.location.origin}/tv`;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const tvUrl = isLocal ? 'https://ruleta-box-production.up.railway.app/tv' : `${window.location.origin}/tv`;
     copyToClipboard(tvUrl, copyTvLinkBtn, '✅ ¡Link TV Copiado!', '📺 Copiar URL para TV');
   });
 }
@@ -139,7 +151,8 @@ if (copyTvLinkBtn) {
 const copyShareAdminBtn = document.getElementById('copyShareAdminBtn');
 if (copyShareAdminBtn) {
   copyShareAdminBtn.addEventListener('click', () => {
-    const adminUrl = `${window.location.origin}/admin`;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const adminUrl = isLocal ? 'https://ruleta-box-production.up.railway.app/admin' : `${window.location.origin}/admin`;
     copyToClipboard(adminUrl, copyShareAdminBtn, '✅ ¡Link Admin Copiado!', '📋 Compartir Enlace Admin');
   });
 }
