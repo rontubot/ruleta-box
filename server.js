@@ -418,6 +418,11 @@ function processCombatAction(action, data = {}) {
           const rival = side === 'red' ? 'blue' : 'red';
           state.scores[rival].total += 5;
           logEvent(`🚫 Falta de ${side === 'red' ? state.redFighter : state.blueFighter}: +5 pts al oponente`);
+        } else if (type === 'batch') {
+          s.hits = Math.max(0, s.hits + delta);
+          s.total = Math.max(0, s.total + delta);
+          io.emit('sound_trigger', 'point');
+          logEvent(`➕ Puntos sumados en bloque (+${delta}) para ${side === 'red' ? state.redFighter : state.blueFighter}`);
         } else if (type === 'adjust') {
           s.total = Math.max(0, s.total + delta);
           logEvent(`✏️ Ajuste manual (${delta >= 0 ? '+' + delta : delta}) para ${side === 'red' ? state.redFighter : state.blueFighter}`);

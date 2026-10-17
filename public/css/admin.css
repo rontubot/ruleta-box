@@ -307,6 +307,45 @@ body {
   gap: 8px;
 }
 
+/* BATCH POINTS (EXACT AMOUNT ADDITION) */
+.batch-points-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.batch-pts-input {
+  width: 90px;
+  min-width: 65px;
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: 16px !important;
+  font-weight: 700;
+  color: #fff;
+  background: #06070b;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 42px;
+}
+
+.batch-pts-btn {
+  flex: 1.5;
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 8px 12px;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
 .both-bonus-btn-container {
   margin-bottom: 20px;
 }

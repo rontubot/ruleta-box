@@ -259,6 +259,40 @@ function recordFoul(side) {
   }
 }
 
+// Batch points adding (exact amount for judges)
+function addBatchPoints(side) {
+  const inputEl = document.getElementById(side === 'red' ? 'redBatchPtsInput' : 'blueBatchPtsInput');
+  if (!inputEl) return;
+  const val = parseInt(inputEl.value, 10);
+  if (isNaN(val) || val <= 0) {
+    inputEl.focus();
+    return;
+  }
+  dispatchCombatAction('award_points', { side, type: 'batch', delta: val });
+  inputEl.value = '';
+}
+
+const redBatchPtsInput = document.getElementById('redBatchPtsInput');
+const blueBatchPtsInput = document.getElementById('blueBatchPtsInput');
+
+if (redBatchPtsInput) {
+  redBatchPtsInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addBatchPoints('red');
+    }
+  });
+}
+
+if (blueBatchPtsInput) {
+  blueBatchPtsInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addBatchPoints('blue');
+    }
+  });
+}
+
 // Roulette triggers
 forceSpinBtn.addEventListener('click', () => {
   dispatchCombatAction('trigger_spin', null);

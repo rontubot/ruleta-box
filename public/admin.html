@@ -181,6 +181,14 @@
                 🚫 Falta (+5 al Azul)
               </button>
             </div>
+
+            <!-- Batch points input for judges -->
+            <div class="batch-points-row">
+              <input type="number" id="redBatchPtsInput" class="form-input batch-pts-input" placeholder="Pts" min="1" step="1">
+              <button type="button" class="btn btn-danger batch-pts-btn" onclick="addBatchPoints('red')">
+                ➕ Agregar
+              </button>
+            </div>
           </div>
 
           <!-- BLUE CORNER -->
@@ -207,6 +215,14 @@
               </button>
               <button class="btn btn-dark" style="color: #18dcff;" onclick="recordFoul('blue')">
                 🚫 Falta (+5 al Rojo)
+              </button>
+            </div>
+
+            <!-- Batch points input for judges -->
+            <div class="batch-points-row">
+              <input type="number" id="blueBatchPtsInput" class="form-input batch-pts-input" placeholder="Pts" min="1" step="1">
+              <button type="button" class="btn btn-blue batch-pts-btn" onclick="addBatchPoints('blue')">
+                ➕ Agregar
               </button>
             </div>
           </div>
