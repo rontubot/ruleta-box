@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Velada del Caos - Overlay Stream</title>
+  <link rel="stylesheet" href="/css/overlay.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <!-- Audio unlock toggle button -->
+  <button id="audioToggle" class="audio-toggle-btn" title="Haz clic para activar el audio de campanas y ruleta">
+    <span id="audioIcon">🔊</span>
+    <span id="audioText">Activar Audio</span>
+  </button>
+
+  <div class="stream-overlay">
+    
+    <!-- TOP SCOREBOARD -->
+    <header class="top-scoreboard">
+      <!-- RED TEAM -->
+      <div class="team-card red">
+        <div class="team-score" id="redScore">0</div>
+        <div class="team-info">
+          <span class="team-badge">ESQUINA ROJA</span>
+          <h2 class="fighter-name" id="redFighterName">Esquina Roja</h2>
+          <div class="team-stats">
+            <span>Golpes: <strong id="redHits">0</strong></span>
+            <span>•</span>
+            <span>Bonos: <strong id="redBonus">0</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER MATCH TIMER & ROUND -->
+      <div class="match-center">
+        <div class="event-brand">LA VELADA DEL CAOS</div>
+        <div class="round-pill" id="roundPill">ROUND 1 / 3</div>
+        <div class="timer-digits" id="timerDigits">01:30</div>
+        <div class="round-progress-bar">
+          <div class="round-progress-fill" id="roundProgressFill" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- BLUE TEAM -->
+      <div class="team-card blue">
+        <div class="team-info">
+          <span class="team-badge">ESQUINA AZUL</span>
+          <h2 class="fighter-name" id="blueFighterName">Esquina Azul</h2>
+          <div class="team-stats">
+            <span>Golpes: <strong id="blueHits">0</strong></span>
+            <span>•</span>
+            <span>Bonos: <strong id="blueBonus">0</strong></span>
+          </div>
+        </div>
+        <div class="team-score" id="blueScore">0</div>
+      </div>
+    </header>
+
+    <!-- CENTER POPUP BANNER (ALERTS) -->
+    <div id="centerBannerAlert" class="center-banner-alert" style="display: none;">
+      <h2 id="bannerTitle">¡SEGUNDOS AFUERA!</h2>
+      <p id="bannerDesc">Asistentes abandonar el ring. Protectores bucales listos.</p>
+    </div>
+
+    <!-- LOWER SECTION: ROULETTE & RULE CARD -->
+    <div class="mid-section">
+      <!-- ROULETTE WHEEL -->
+      <div class="roulette-container">
+        <div class="wheel-wrapper">
+          <div class="wheel-pointer"></div>
+          <canvas id="rouletteWheel" width="500" height="500"></canvas>
+          <div class="wheel-center-cap" id="wheelCenterCap">🥊</div>
+        </div>
+        <div class="roulette-timer-badge">
+          <span>Próximo Giro:</span>
+          <span class="spin-countdown" id="spinCountdown">15s</span>
+        </div>
+      </div>
+
+      <!-- ACTIVE RULE CARD -->
+      <div class="active-rule-card" id="activeRuleCard">
+        <div class="rule-header">
+          <div class="rule-category-tag">
+            <span>⚡ REGLA ACTIVA</span>
+            <span id="ruleCategory">• COMBATE</span>
+          </div>
+          <div class="rule-points-badge" id="rulePointsBadge">+10 PTS</div>
+        </div>
+        <h1 class="rule-title" id="ruleTitle">
+          <span id="ruleIcon">🥊</span>
+          <span id="ruleName">Esperando inicio...</span>
+        </h1>
+        <p class="rule-description" id="ruleDesc">
+          El combate está por comenzar. Cada 15 segundos la Ruleta del Caos dictará una nueva regla obligatoria.
+        </p>
+        <div class="rule-timer-bar">
+          <div class="rule-timer-fill" id="ruleTimerFill" style="width: 100%;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- WINNER CELEBRATION MODAL -->
+  <div id="winnerModal" class="winner-overlay-modal" style="display: none;">
+    <canvas id="confettiCanvas"></canvas>
+    <div class="winner-content-box" id="winnerContentBox">
+      <div class="winner-event-title">LA VELADA DEL CAOS</div>
+      <div class="winner-crown">👑</div>
+      <div class="winner-declaration-text">¡VENCEDOR OFICIAL!</div>
+      <h1 class="winner-hero-name" id="winnerHeroName">ESQUINA ROJA</h1>
+      <div class="winner-method-badge" id="winnerMethodBadge">DECISIÓN DE LOS JUECES</div>
+      
+      <div class="winner-score-recap">
+        <div class="recap-col">
+          <span class="recap-team red" id="recapRedName">ROJO</span>
+          <span class="recap-pts" id="recapRedPts">0</span>
+          <span class="recap-breakdown" id="recapRedBreakdown">0 Golpes / 0 Bonos</span>
+        </div>
+        <div class="recap-vs">VS</div>
+        <div class="recap-col">
+          <span class="recap-team blue" id="recapBlueName">AZUL</span>
+          <span class="recap-pts" id="recapBluePts">0</span>
+          <span class="recap-breakdown" id="recapBlueBreakdown">0 Golpes / 0 Bonos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/rules.js"></script>
+  <script src="/js/sound.js"></script>
+  <script src="/js/overlay.js"></script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Moderador - La Velada del Caos</title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="admin-header">
+    <div class="brand-section">
+      <h1>🥊 LA VELADA DEL CAOS • Panel de Moderación y Control</h1>
+      <p>Control central de rounds, cronómetro de descanso, ruleta automática cada 15s y veredicto de jueces</p>
+    </div>
+    <div class="header-actions">
+      <a href="/overlay" target="_blank" class="btn-overlay-link">
+        🖥️ Abrir Overlay de Stream (OBS) ↗
+      </a>
+      <button id="adminAudioBtn" class="btn btn-dark" style="font-size: 13px;">
+        🔊 Probar Sonido
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN ADMIN GRID -->
+  <main class="admin-grid">
+
+    <!-- COLUMN 1: SETUP & MATCH CONTROLS -->
+    <div class="admin-col">
+      
+      <!-- MATCH SETUP -->
+      <section class="card">
+        <h2 class="card-title">⚙️ Configuración del Combate</h2>
+        <div class="form-group">
+          <label>Modalidad de Pelea</label>
+          <select id="matchModeSelect" class="form-select">
+            <option value="1v1">1v1 (Individual - 6 Reglas de Combate)</option>
+            <option value="tag_team">Tag Team (Por Equipos - Incluye Relevos y Estructurales)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Peleador(es) Esquina Roja</label>
+          <input type="text" id="redFighterInput" class="form-input" placeholder="Ej: Marcos 'El Toro' / Equipo Alfa">
+        </div>
+        <div class="form-group">
+          <label>Peleador(es) Esquina Azul</label>
+          <input type="text" id="blueFighterInput" class="form-input" placeholder="Ej: Lucas 'El Rayo' / Equipo Beta">
+        </div>
+        <button id="saveConfigBtn" class="btn btn-dark btn-block">💾 Guardar Nombres y Modo</button>
+      </section>
+
+      <!-- CLOCK & ROUND CONTROLS -->
+      <section class="card">
+        <h2 class="card-title">⏱️ Control del Cronómetro</h2>
+        
+        <div class="match-status-bar">
+          <div>
+            <div class="status-round-tag" id="adminRoundTag">ROUND 1 / 3</div>
+            <div class="status-phase-badge" id="adminPhaseBadge">INACTIVO</div>
+          </div>
+          <div class="status-timer-big" id="adminTimerDigits">01:30</div>
+        </div>
+
+        <div class="control-btn-grid">
+          <button id="startCombatBtn" class="btn btn-success">▶️ Iniciar / Box</button>
+          <button id="pauseCombatBtn" class="btn btn-danger">⏸️ Pausar / Stop</button>
+          <button id="resumeCombatBtn" class="btn btn-primary">⏯️ Reanudar</button>
+          <button id="restartRoundBtn" class="btn btn-dark">🔄 Reiniciar Round</button>
+        </div>
+
+        <label style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Cambiar de Round:</label>
+        <div class="round-jump-row">
+          <button class="btn btn-dark" onclick="jumpToRound(1)">R1</button>
+          <button class="btn btn-dark" onclick="jumpToRound(2)">R2</button>
+          <button class="btn btn-dark" onclick="jumpToRound(3)">R3</button>
+        </div>
+      </section>
+
+      <!-- REFEREE & SAFETY PROTOCOL (SECTION 3) -->
+      <section class="card">
+        <h2 class="card-title">⚖️ Protocolo de Árbitro y Seguridad</h2>
+        <div class="referee-btn-grid">
+          <button id="protectionCountBtn" class="btn btn-warning" title="Pausa el combate e inicia la cuenta reglamentaria de 8 segundos">
+            🛡️ Cuenta 8-Count
+          </button>
+          <button id="cancelProtectionBtn" class="btn btn-dark">
+            ❌ Cancelar Cuenta
+          </button>
+          <button id="recoveryTimeBtn" class="btn btn-dark" title="Hasta 1 minuto de recuperación reglamentaria por golpe bajo">
+            🩹 Recuperación (1m)
+          </button>
+          <button id="customAlertBtn" class="btn btn-dark" title="Muestra un aviso destacado en pantalla">
+            📢 Alerta en Stream
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- COLUMN 2: LIVE SCORING & ROULETTE -->
+    <div class="admin-col">
+
+      <!-- SCORING PANELS -->
+      <section class="card">
+        <h2 class="card-title">🥊 Marcador y Tarjetas de Puntuación</h2>
+        
+        <div class="scoring-grid">
+          <!-- RED CORNER -->
+          <div class="score-box red">
+            <div class="score-header">
+              <span class="score-corner-label">🔴 ROJO</span>
+              <strong id="adminRedName" style="font-size: 14px;">Esquina Roja</strong>
+            </div>
+            <div class="score-total-digits" id="adminRedScore">0</div>
+            <div class="score-breakdown-row">
+              <span>Golpes: <strong id="adminRedHits">0</strong></span>
+              <span>Bonos: <strong id="adminRedBonus">0</strong></span>
+              <span>Faltas: <strong id="adminRedFouls">0</strong></span>
+            </div>
+            <div class="score-btn-group">
+              <button class="btn btn-danger" onclick="addHit('red')">
+                🥊 +1 Golpe Limpio
+              </button>
+              <button class="btn btn-warning" id="redBonusBtn" onclick="awardBonus('red')">
+                ⭐ + Bono Ruleta (+10)
+              </button>
+              <button class="btn btn-dark" onclick="adjustPoints('red', -1)">
+                ➖ -1 Corrección
+              </button>
+              <button class="btn btn-dark" style="color: #ff4757;" onclick="recordFoul('red')">
+                🚫 Falta (+5 al Azul)
+              </button>
+            </div>
+          </div>
+
+          <!-- BLUE CORNER -->
+          <div class="score-box blue">
+            <div class="score-header">
+              <span class="score-corner-label">🔵 AZUL</span>
+              <strong id="adminBlueName" style="font-size: 14px;">Esquina Azul</strong>
+            </div>
+            <div class="score-total-digits" id="adminBlueScore">0</div>
+            <div class="score-breakdown-row">
+              <span>Golpes: <strong id="adminBlueHits">0</strong></span>
+              <span>Bonos: <strong id="adminBlueBonus">0</strong></span>
+              <span>Faltas: <strong id="adminBlueFouls">0</strong></span>
+            </div>
+            <div class="score-btn-group">
+              <button class="btn btn-blue" onclick="addHit('blue')">
+                🥊 +1 Golpe Limpio
+              </button>
+              <button class="btn btn-warning" id="blueBonusBtn" onclick="awardBonus('blue')">
+                ⭐ + Bono Ruleta (+10)
+              </button>
+              <button class="btn btn-dark" onclick="adjustPoints('blue', -1)">
+                ➖ -1 Corrección
+              </button>
+              <button class="btn btn-dark" style="color: #18dcff;" onclick="recordFoul('blue')">
+                🚫 Falta (+5 al Rojo)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="both-bonus-btn-container">
+          <button class="btn btn-dark btn-block" id="bothBonusBtn" onclick="awardBonus('both')">
+            🤝 Ambos Cumplieron el Reto (Otorgar Bono a Ambos)
+          </button>
+        </div>
+      </section>
+
+      <!-- ROULETTE CONTROL & ACTIVE RULE -->
+      <section class="card">
+        <h2 class="card-title">🎰 Ruleta del Caos (Giro cada 15s)</h2>
+        
+        <div class="active-rule-preview">
+          <h4>
+            <span id="adminRuleTitle">🥊 Esperando inicio</span>
+            <span class="rule-points-badge" id="adminRuleBadge" style="font-size: 12px; padding: 2px 8px; border-radius: 6px; background: #ffd32a; color: #000;">+10 PTS</span>
+          </h4>
+          <p id="adminRuleDesc">Cada 15 segundos la ruleta gira automáticamente para cambiar las condiciones reglamentarias del combate.</p>
+        </div>
+
+        <div class="spin-progress-box">
+          <span>Tiempo para el siguiente giro:</span>
+          <strong id="adminSpinCountdown" style="color: var(--gold); font-size: 18px;">15s</strong>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <button id="forceSpinBtn" class="btn btn-warning">
+            🎲 Forzar Giro Aleatorio
+          </button>
+          <button id="forceRuleBtn" class="btn btn-dark">
+            🎯 Aplicar Regla Manual
+          </button>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Seleccionar Regla Manual:</label>
+          <select id="specificRuleSelect" class="form-select">
+            <!-- Populated dynamically based on 1v1 / Tag Team -->
+          </select>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- COLUMN 3: FINAL VERDICT & EVENT LOG -->
+    <div class="admin-col">
+
+      <!-- VERDICT / WINNER DECLARATION -->
+      <section class="card verdict-card">
+        <h2 class="card-title" style="color: var(--gold);">🏆 Veredicto de Jueces y Ganador</h2>
+        
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+          Al concluir los 3 rounds o por Knockout Técnico (TKO), escoge al ganador para mostrar la celebración en vivo a los espectadores.
+        </p>
+
+        <label style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Seleccionar Ganador:</label>
+        <div class="winner-pick-grid">
+          <button type="button" class="pick-winner-btn" id="pickRedBtn" onclick="selectWinner('red')">
+            🔴 ROJO
+          </button>
+          <button type="button" class="pick-winner-btn" id="pickBlueBtn" onclick="selectWinner('blue')">
+            🔵 AZUL
+          </button>
+          <button type="button" class="pick-winner-btn" id="pickDrawBtn" onclick="selectWinner('draw')">
+            ⚖️ EMPATE
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label>Método de Victoria</label>
+          <select id="victoryMethodSelect" class="form-select">
+            <option value="Decisión de los Jueces">Decisión de los Jueces (Por Puntos)</option>
+            <option value="Decisión Unánime">Decisión Unánime</option>
+            <option value="Decisión Dividida">Decisión Dividida</option>
+            <option value="Knockout Técnico (TKO)">Knockout Técnico (TKO)</option>
+            <option value="Descalificación">Descalificación por Faltas</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Notas / Anotaciones Especiales</label>
+          <input type="text" id="verdictNotesInput" class="form-input" placeholder="Ej: Dominio total en el 3er round">
+        </div>
+
+        <button id="proclaimWinnerBtn" class="btn btn-warning btn-block" style="font-size: 15px; padding: 14px; margin-bottom: 10px;">
+          📢 PROCLAMAR GANADOR AL STREAM
+        </button>
+
+        <div style="display: flex; gap: 8px;">
+          <button id="hideWinnerBtn" class="btn btn-dark" style="flex: 1; font-size: 12px;">
+            Ocultar Pantalla
+          </button>
+          <button id="resetAllBtn" class="btn btn-danger" style="flex: 1; font-size: 12px;">
+            Reiniciar Pelea
+          </button>
+        </div>
+      </section>
+
+      <!-- REAL-TIME LOG -->
+      <section class="card">
+        <h2 class="card-title">📜 Registro de Eventos (Live Log)</h2>
+        <ul id="eventLogList" class="event-log-list">
+          <li class="event-log-item">
+            <span class="event-log-time">--:--:--</span>
+            <span>Sistema listo para iniciar la velada.</span>
+          </li>
+        </ul>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script src="/js/rules.js"></script>
+  <script src="/js/sound.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
