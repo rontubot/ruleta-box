@@ -19,8 +19,11 @@
       <button id="copyObsLinkBtn" class="btn btn-primary" style="font-size: 13px;">
         📋 Copiar URL para OBS
       </button>
+      <button id="copyTvLinkBtn" class="btn btn-warning" style="font-size: 13px; color: #000; font-weight: 800;">
+        📺 Copiar URL para TV
+      </button>
       <a href="/tv" target="_blank" class="btn-overlay-link" style="border-color: #ffd32a; color: #ffd32a;">
-        📺 Pantalla TV (Reloj) ↗
+        📺 Abrir Pantalla TV ↗
       </a>
       <a href="/overlay" target="_blank" class="btn-overlay-link">
         🖥️ Ver Overlay ↗
@@ -30,6 +33,27 @@
       </button>
     </div>
   </header>
+
+  <!-- SERVER SYNCHRONIZATION BANNER -->
+  <div style="background: rgba(0, 210, 211, 0.08); border: 1px solid rgba(0, 210, 211, 0.35); border-radius: 12px; padding: 12px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 20px;">🌐</span>
+      <div>
+        <div style="font-size: 13px; font-weight: 700; color: #fff;">
+          Servidor Activo: <span id="currentServerDomain" style="color: #ffd32a; font-family: monospace; font-size: 14px;"></span>
+          <span id="adminConnBadge" style="margin-left: 8px; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: rgba(46, 213, 115, 0.2); color: #2ed573;">🟢 SINCRONIZADO</span>
+        </div>
+        <p style="font-size: 11px; color: #a4b0be; margin-top: 2px;">
+          ⚡ <strong>Sincronización multi-dispositivo:</strong> Para que cualquier TV, teléfono o laptop vea el reloj y eventos en vivo, <strong>todos deben ingresar a esta misma dirección web</strong>.
+        </p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button id="copyShareAdminBtn" class="btn btn-dark" style="font-size: 12px;">
+        📋 Compartir Enlace Admin
+      </button>
+    </div>
+  </div>
 
   <!-- MAIN ADMIN GRID -->
   <main class="admin-grid">

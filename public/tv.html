@@ -387,7 +387,12 @@
 
   <!-- TV TOP BAR -->
   <header class="tv-header">
-    <div class="event-title">🥊 LA VELADA DEL CAOS</div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div class="event-title">🥊 LA VELADA DEL CAOS</div>
+      <div id="tvConnBadge" style="font-family: 'Chakra Petch', sans-serif; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px; background: rgba(46, 213, 115, 0.2); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.4); text-transform: uppercase; letter-spacing: 1px;">
+        🟢 EN VIVO
+      </div>
+    </div>
     <div class="phase-badge" id="tvPhaseBadge">EN ESPERA</div>
   </header>
 
@@ -434,7 +439,42 @@
   </footer>
 
   <script>
-    const socket = io();
+    const socket = io({
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000
+    });
+
+    const tvConnBadge = document.getElementById('tvConnBadge');
+    socket.on('connect', () => {
+      if (tvConnBadge) {
+        tvConnBadge.style.background = 'rgba(46, 213, 115, 0.2)';
+        tvConnBadge.style.color = '#2ed573';
+        tvConnBadge.style.borderColor = 'rgba(46, 213, 115, 0.4)';
+        tvConnBadge.textContent = '🟢 EN VIVO';
+      }
+    });
+
+    socket.on('disconnect', () => {
+      if (tvConnBadge) {
+        tvConnBadge.style.background = 'rgba(255, 71, 87, 0.3)';
+        tvConnBadge.style.color = '#ff4757';
+        tvConnBadge.style.borderColor = '#ff4757';
+        tvConnBadge.textContent = '🔴 RECONECTANDO...';
+      }
+    });
+
+    socket.on('connect_error', () => {
+      if (tvConnBadge) {
+        tvConnBadge.style.background = 'rgba(255, 71, 87, 0.3)';
+        tvConnBadge.style.color = '#ff4757';
+        tvConnBadge.style.borderColor = '#ff4757';
+        tvConnBadge.textContent = '⚠️ SIN CONEXIÓN';
+      }
+    });
 
     const tvPhaseBadge = document.getElementById('tvPhaseBadge');
     const tvRoundTag = document.getElementById('tvRoundTag');

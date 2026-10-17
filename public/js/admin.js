@@ -1,7 +1,45 @@
 // Admin Console Controller
-const socket = io();
+const socket = io({
+  transports: ['websocket', 'polling'],
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  timeout: 20000
+});
 
 // UI Elements
+const currentServerDomain = document.getElementById('currentServerDomain');
+const adminConnBadge = document.getElementById('adminConnBadge');
+
+if (currentServerDomain) {
+  currentServerDomain.textContent = window.location.origin;
+}
+
+socket.on('connect', () => {
+  if (adminConnBadge) {
+    adminConnBadge.style.background = 'rgba(46, 213, 115, 0.2)';
+    adminConnBadge.style.color = '#2ed573';
+    adminConnBadge.textContent = '🟢 SINCRONIZADO';
+  }
+});
+
+socket.on('disconnect', () => {
+  if (adminConnBadge) {
+    adminConnBadge.style.background = 'rgba(255, 71, 87, 0.3)';
+    adminConnBadge.style.color = '#ff4757';
+    adminConnBadge.textContent = '🔴 RECONECTANDO...';
+  }
+});
+
+socket.on('connect_error', () => {
+  if (adminConnBadge) {
+    adminConnBadge.style.background = 'rgba(255, 71, 87, 0.3)';
+    adminConnBadge.style.color = '#ff4757';
+    adminConnBadge.textContent = '⚠️ SIN CONEXIÓN';
+  }
+});
+
 const matchModeSelect = document.getElementById('matchModeSelect');
 const maxRoundsSelect = document.getElementById('maxRoundsSelect');
 const redFighterInput = document.getElementById('redFighterInput');
@@ -84,19 +122,39 @@ const copyObsLinkBtn = document.getElementById('copyObsLinkBtn');
 if (copyObsLinkBtn) {
   copyObsLinkBtn.addEventListener('click', () => {
     const obsUrl = `${window.location.origin}/overlay?obs=1`;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(obsUrl).then(() => {
-        copyObsLinkBtn.textContent = '✅ ¡Copiado!';
-        setTimeout(() => {
-          copyObsLinkBtn.textContent = '📋 Copiar URL para OBS';
-        }, 2000);
-      }).catch(() => {
-        prompt('Copia esta URL para OBS:', obsUrl);
-      });
-    } else {
-      prompt('Copia esta URL para OBS:', obsUrl);
-    }
+    copyToClipboard(obsUrl, copyObsLinkBtn, '✅ ¡URL OBS Copiada!', '📋 Copiar URL para OBS');
   });
+}
+
+// Copy TV URL Button
+const copyTvLinkBtn = document.getElementById('copyTvLinkBtn');
+if (copyTvLinkBtn) {
+  copyTvLinkBtn.addEventListener('click', () => {
+    const tvUrl = `${window.location.origin}/tv`;
+    copyToClipboard(tvUrl, copyTvLinkBtn, '✅ ¡Link TV Copiado!', '📺 Copiar URL para TV');
+  });
+}
+
+// Copy Share Admin URL Button
+const copyShareAdminBtn = document.getElementById('copyShareAdminBtn');
+if (copyShareAdminBtn) {
+  copyShareAdminBtn.addEventListener('click', () => {
+    const adminUrl = `${window.location.origin}/admin`;
+    copyToClipboard(adminUrl, copyShareAdminBtn, '✅ ¡Link Admin Copiado!', '📋 Compartir Enlace Admin');
+  });
+}
+
+function copyToClipboard(text, btnEl, successText, defaultText) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      btnEl.textContent = successText;
+      setTimeout(() => { btnEl.textContent = defaultText; }, 2500);
+    }).catch(() => {
+      prompt('Copia este enlace para el otro dispositivo:', text);
+    });
+  } else {
+    prompt('Copia este enlace para el otro dispositivo:', text);
+  }
 }
 
 // Save match configuration
