@@ -157,6 +157,16 @@ function copyToClipboard(text, btnEl, successText, defaultText) {
   }
 }
 
+// Dual-Dispatch Combat Actions (Emits to WebSocket AND sends to REST API)
+function dispatchCombatAction(action, payload = {}) {
+  socket.emit(action, payload);
+  fetch('/api/action', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    body: JSON.stringify({ action, payload })
+  }).catch(() => {});
+}
+
 // Save match configuration
 saveConfigBtn.addEventListener('click', () => {
   const mode = matchModeSelect.value;
@@ -164,7 +174,7 @@ saveConfigBtn.addEventListener('click', () => {
   const redFighter = redFighterInput.value.trim() || 'Esquina Roja';
   const blueFighter = blueFighterInput.value.trim() || 'Esquina Azul';
 
-  socket.emit('update_config', { mode, maxRounds, redFighter, blueFighter });
+  dispatchCombatAction('update_config', { mode, maxRounds, redFighter, blueFighter });
 });
 
 matchModeSelect.addEventListener('change', () => {
@@ -177,38 +187,38 @@ matchModeSelect.addEventListener('change', () => {
 });
 
 // Timer & Combat controls
-startCombatBtn.addEventListener('click', () => socket.emit('start_combat'));
-pauseCombatBtn.addEventListener('click', () => socket.emit('pause_combat'));
-resumeCombatBtn.addEventListener('click', () => socket.emit('resume_combat'));
+startCombatBtn.addEventListener('click', () => dispatchCombatAction('start_combat'));
+pauseCombatBtn.addEventListener('click', () => dispatchCombatAction('pause_combat'));
+resumeCombatBtn.addEventListener('click', () => dispatchCombatAction('resume_combat'));
 restartRoundBtn.addEventListener('click', () => {
   if (confirm('¿Reiniciar el round actual a 1:30?')) {
-    socket.emit('restart_round');
+    dispatchCombatAction('restart_round');
   }
 });
 
 function jumpToRound(roundNum) {
   if (confirm(`¿Cambiar manualmente al Round ${roundNum}?`)) {
-    socket.emit('set_round', roundNum);
+    dispatchCombatAction('set_round', { roundNum });
   }
 }
 
 // Referee & Safety Protocols
 protectionCountBtn.addEventListener('click', () => {
-  socket.emit('start_protection_count');
+  dispatchCombatAction('start_protection_count');
 });
 
 cancelProtectionBtn.addEventListener('click', () => {
-  socket.emit('stop_protection_count');
+  dispatchCombatAction('stop_protection_count');
 });
 
 recoveryTimeBtn.addEventListener('click', () => {
-  socket.emit('start_recovery_time');
+  dispatchCombatAction('start_recovery_time');
 });
 
 customAlertBtn.addEventListener('click', () => {
   const text = prompt('Escribe el aviso para mostrar en pantalla:', '¡ÁRBITRO DETIENE EL COMBATE!');
   if (text) {
-    socket.emit('banner_alert', {
+    dispatchCombatAction('banner_alert', {
       title: 'AVISO DEL ÁRBITRO',
       message: text,
       type: 'warning'
@@ -218,32 +228,32 @@ customAlertBtn.addEventListener('click', () => {
 
 // Scoring actions
 function addHit(side) {
-  socket.emit('award_points', { side, type: 'hit', delta: 1 });
+  dispatchCombatAction('award_points', { side, type: 'hit', delta: 1 });
 }
 
 function awardBonus(side) {
-  socket.emit('award_rule_bonus', { side });
+  dispatchCombatAction('award_rule_bonus', { side });
 }
 
 function adjustPoints(side, delta) {
-  socket.emit('award_points', { side, type: 'adjust', delta });
+  dispatchCombatAction('award_points', { side, type: 'adjust', delta });
 }
 
 function recordFoul(side) {
   const rival = side === 'red' ? 'Azul' : 'Roja';
   if (confirm(`¿Registrar falta para ${side === 'red' ? 'Rojo' : 'Azul'}? Se otorgarán +5 puntos reglamentarios a la esquina ${rival}.`)) {
-    socket.emit('award_points', { side, type: 'foul', delta: 0 });
+    dispatchCombatAction('award_points', { side, type: 'foul', delta: 0 });
   }
 }
 
 // Roulette triggers
 forceSpinBtn.addEventListener('click', () => {
-  socket.emit('trigger_spin', null);
+  dispatchCombatAction('trigger_spin', null);
 });
 
 forceRuleBtn.addEventListener('click', () => {
   const ruleId = specificRuleSelect.value;
-  socket.emit('trigger_spin', ruleId);
+  dispatchCombatAction('trigger_spin', ruleId);
 });
 
 // Winner Selection
@@ -262,7 +272,7 @@ proclaimWinnerBtn.addEventListener('click', () => {
   const method = victoryMethodSelect.value;
   const notes = verdictNotesInput.value.trim();
 
-  socket.emit('proclaim_winner', {
+  dispatchCombatAction('proclaim_winner', {
     winner: selectedWinner,
     method,
     notes
@@ -270,12 +280,12 @@ proclaimWinnerBtn.addEventListener('click', () => {
 });
 
 hideWinnerBtn.addEventListener('click', () => {
-  socket.emit('clear_winner');
+  dispatchCombatAction('clear_winner');
 });
 
 resetAllBtn.addEventListener('click', () => {
   if (confirm('¿ATENCIÓN: Quieres reiniciar todo el combate desde cero (marcadores, rounds y tiempos)?')) {
-    socket.emit('reset_all');
+    dispatchCombatAction('reset_all');
   }
 });
 
@@ -285,18 +295,32 @@ function formatTime(sec) {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-// Update Admin UI
-socket.on('state_update', (state) => {
+function renderAdminUI(state) {
+  if (!state) return;
   currentServerState = state;
 
-  // Mode and form inputs (only fill if empty or on init)
-  if (!redFighterInput.value) redFighterInput.value = state.redFighter;
-  if (!blueFighterInput.value) blueFighterInput.value = state.blueFighter;
-  if (matchModeSelect.value !== state.mode) {
-    matchModeSelect.value = state.mode;
-    updateRuleSelectOptions(state.mode);
+  // Real-time server sync indicator with device count
+  if (adminConnBadge) {
+    const count = state.connectedDevices || 1;
+    adminConnBadge.style.background = 'rgba(46, 213, 115, 0.2)';
+    adminConnBadge.style.color = '#2ed573';
+    adminConnBadge.textContent = `🟢 SINCRONIZADO (${count} ${count === 1 ? 'dispositivo' : 'dispositivos'})`;
   }
-  if (maxRoundsSelect && state.maxRounds) {
+
+  // Mode and form inputs (sync across multiple admins unless user is actively typing)
+  if (document.activeElement !== redFighterInput && state.redFighter) {
+    redFighterInput.value = state.redFighter;
+  }
+  if (document.activeElement !== blueFighterInput && state.blueFighter) {
+    blueFighterInput.value = state.blueFighter;
+  }
+  if (document.activeElement !== matchModeSelect && state.mode) {
+    if (matchModeSelect.value !== state.mode) {
+      matchModeSelect.value = state.mode;
+      updateRuleSelectOptions(state.mode);
+    }
+  }
+  if (document.activeElement !== maxRoundsSelect && state.maxRounds) {
     maxRoundsSelect.value = String(state.maxRounds);
   }
 
@@ -427,7 +451,24 @@ socket.on('state_update', (state) => {
       eventLogList.appendChild(li);
     });
   }
+}
+
+socket.on('state_update', (state) => {
+  renderAdminUI(state);
 });
+
+// Dual-Layer Continuous API Sync: ensures admin is 100% synced with any other device
+async function syncAdminFromAPI() {
+  try {
+    const res = await fetch('/api/state?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const st = await res.json();
+      renderAdminUI(st);
+    }
+  } catch (err) {}
+}
+syncAdminFromAPI();
+setInterval(syncAdminFromAPI, 1000);
 
 // Initialize options on load
 updateRuleSelectOptions('1v1');

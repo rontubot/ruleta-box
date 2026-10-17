@@ -501,7 +501,18 @@
       return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    socket.on('state_update', (state) => {
+    function renderTV(state) {
+      if (!state) return;
+
+      // Update connection indicator with device count
+      if (tvConnBadge) {
+        const count = state.connectedDevices || 1;
+        tvConnBadge.style.background = 'rgba(46, 213, 115, 0.2)';
+        tvConnBadge.style.color = '#2ed573';
+        tvConnBadge.style.borderColor = 'rgba(46, 213, 115, 0.4)';
+        tvConnBadge.textContent = `🟢 EN VIVO (${count} ${count === 1 ? 'dispositivo' : 'dispositivos'})`;
+      }
+
       // Fighters
       tvRedName.textContent = `🔴 ${state.redFighter || 'Esquina Roja'}`;
       tvBlueName.textContent = `${state.blueFighter || 'Esquina Azul'} 🔵`;
@@ -601,7 +612,26 @@
           tvNextSpinPill.style.display = 'none';
         }
       }
+    }
+
+    socket.on('state_update', (state) => {
+      renderTV(state);
     });
+
+    // Dual-Layer HTTP Sync Fallback: fetch state immediately and poll every 1s
+    async function syncStateFromAPI() {
+      try {
+        const res = await fetch('/api/state?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const st = await res.json();
+          renderTV(st);
+        }
+      } catch (err) {
+        // network silent retry
+      }
+    }
+    syncStateFromAPI();
+    setInterval(syncStateFromAPI, 1000);
   </script>
 </body>
 </html>

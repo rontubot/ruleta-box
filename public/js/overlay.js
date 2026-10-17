@@ -489,6 +489,19 @@ socket.on('state_update', (state) => {
   updateOverlay(state);
 });
 
+// Dual-Layer Continuous API Sync: ensures stream overlay is 100% in sync even if socket reconnection occurs
+async function syncOverlayFromAPI() {
+  try {
+    const res = await fetch('/api/state?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const st = await res.json();
+      updateOverlay(st);
+    }
+  } catch (err) {}
+}
+syncOverlayFromAPI();
+setInterval(syncOverlayFromAPI, 1000);
+
 socket.on('spin_started', (data) => {
   animateSpin(data.rule, data.duration);
 });
