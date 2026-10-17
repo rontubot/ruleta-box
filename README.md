@@ -16,9 +16,16 @@ Sistema web en tiempo real desarrollado para eventos de boxeo en vivo con ruleta
    npm start
    ```
 
-3. **Acceder a las interfaces**:
+3. **Acceder a las interfaces en local**:
    - 📺 **Overlay para Stream (OBS / Espectadores)**: [http://localhost:3000/overlay](http://localhost:3000/overlay)
    - 🎛️ **Panel del Moderador / Jueces**: [http://localhost:3000/admin](http://localhost:3000/admin)
+
+---
+
+## 🌐 Enlaces en Vivo (Producción en Railway)
+
+- 📺 **Stream Overlay (OBS Browser Source)**: [https://ruleta-box-production.up.railway.app/overlay](https://ruleta-box-production.up.railway.app/overlay)
+- 🎛️ **Panel del Moderador / Árbitro**: [https://ruleta-box-production.up.railway.app/admin](https://ruleta-box-production.up.railway.app/admin)
 
 > 💡 **Nota de red local:** El moderador puede abrir el panel desde un celular, tablet o laptop conectada al mismo Wi-Fi ingresando a `http://TU_IP_LOCAL:3000/admin` (por ejemplo `http://192.168.1.50:3000/admin`).
 
