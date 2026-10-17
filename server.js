@@ -192,6 +192,13 @@ function startTimer() {
         state.roundTimeLeft -= 1;
         state.rouletteTimeLeft -= 1;
 
+        // Tablillas: 10 segundos para terminar el round (los 3 golpes clásicos de boxeo)
+        if (state.roundTimeLeft === 10) {
+          io.emit('sound_trigger', 'tablillas');
+          io.emit('sound_trigger', 'warning');
+          logEvent('🪵 ¡Últimos 10 segundos del asalto! (Sonido de tablillas)');
+        }
+
         // Conteo regresivo del evento / regla activa
         if (state.currentRule && state.ruleTimeLeft > 0) {
           state.ruleTimeLeft -= 1;
@@ -224,9 +231,10 @@ function startTimer() {
             message: 'Asistentes abandonar el ring. Protectores bucales listos.',
             type: 'warning'
           };
+          io.emit('sound_trigger', 'tablillas');
           io.emit('sound_trigger', 'warning');
           io.emit('banner_alert', state.bannerAlert);
-          logEvent('⚠️ ¡Segundos Afuera! 10s para reanudar el combate.');
+          logEvent('⚠️ ¡Segundos Afuera! 10s para reanudar el combate (Tablillas).');
         }
 
         if (state.restTimeLeft <= 0) {

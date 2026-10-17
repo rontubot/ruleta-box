@@ -122,10 +122,20 @@ function updateRuleSelectOptions(mode) {
 }
 
 // Audio Test
-adminAudioBtn.addEventListener('click', () => {
-  sounds.init();
-  sounds.playBell();
-});
+if (adminAudioBtn) {
+  adminAudioBtn.addEventListener('click', () => {
+    sounds.init();
+    sounds.playBell();
+  });
+}
+
+const adminTablillasBtn = document.getElementById('adminTablillasBtn');
+if (adminTablillasBtn) {
+  adminTablillasBtn.addEventListener('click', () => {
+    sounds.init();
+    sounds.playTablillas();
+  });
+}
 
 // Copy OBS URL Button
 const copyObsLinkBtn = document.getElementById('copyObsLinkBtn');

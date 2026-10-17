@@ -5,7 +5,10 @@ class SoundManager {
     this.muted = false;
     this.bellBuffer = null;
     this.bellAudio = new Audio('/sounds/campana.mp3');
+    this.tablillasBuffer = null;
+    this.tablillasAudio = new Audio('/sounds/tablillas.mp3');
     this.loadBellAudio();
+    this.loadTablillasAudio();
   }
 
   init() {
@@ -13,6 +16,7 @@ class SoundManager {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AudioCtx();
       this.loadBellAudio();
+      this.loadTablillasAudio();
     }
     if (this.ctx && this.ctx.state === "suspended") {
       this.ctx.resume();
@@ -35,6 +39,25 @@ class SoundManager {
       })
       .catch(err => {
         console.warn('Fallback a HTMLAudio para campana:', err);
+      });
+  }
+
+  loadTablillasAudio() {
+    if (this.tablillasBuffer || !window.fetch) return;
+    fetch('/sounds/tablillas.mp3')
+      .then(res => res.arrayBuffer())
+      .then(data => {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        return this.ctx.decodeAudioData(data);
+      })
+      .then(buffer => {
+        this.tablillasBuffer = buffer;
+      })
+      .catch(err => {
+        console.warn('Fallback a HTMLAudio para tablillas:', err);
       });
   }
 
@@ -141,27 +164,57 @@ class SoundManager {
     });
   }
 
-  playWarning() {
+  playTablillas() {
     if (this.muted) return;
     this.init();
-    const now = this.ctx.currentTime;
-    
-    // Low horn / warning tone
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(220, now);
-    osc.frequency.linearRampToValueAtTime(180, now + 0.4);
-    
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-    
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    
-    osc.start(now);
-    osc.stop(now + 0.5);
+
+    // Prioridad 1: Web Audio Buffer (cero latencia, fidelidad de audio total)
+    if (this.ctx && this.tablillasBuffer) {
+      try {
+        const source = this.ctx.createBufferSource();
+        source.buffer = this.tablillasBuffer;
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(1.0, this.ctx.currentTime);
+        source.connect(gain);
+        gain.connect(this.ctx.destination);
+        source.start(0);
+        return;
+      } catch (e) {
+        console.warn('Fallo buffer tablillas, usando HTMLAudio:', e);
+      }
+    }
+
+    // Prioridad 2: Elemento de audio HTML5
+    try {
+      const audioClone = this.tablillasAudio.cloneNode();
+      audioClone.volume = 1.0;
+      audioClone.play().catch(() => {});
+    } catch (e) {
+      this.playSynthWoodBlock();
+    }
+  }
+
+  playWarning() {
+    // Las tablillas reemplazan el sonido de aviso de los últimos 10 segundos
+    this.playTablillas();
+  }
+
+  playSynthWoodBlock() {
+    if (this.muted || !this.ctx) return;
+    [0, 0.28, 0.56].forEach(offset => {
+      const now = this.ctx.currentTime + offset;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(750, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.05);
+      gain.gain.setValueAtTime(0.45, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.06);
+    });
   }
 
   playPoint() {

@@ -514,7 +514,7 @@ socket.on('sound_trigger', (type) => {
   if (type === 'bell') sounds.playBell();
   else if (type === 'triple_bell') sounds.playTripleBell();
   else if (type === 'tick') sounds.playTick();
-  else if (type === 'warning') sounds.playWarning();
+  else if (type === 'tablillas' || type === 'warning') sounds.playTablillas();
   else if (type === 'point') sounds.playPoint();
   else if (type === 'rule_selected') sounds.playRuleSelected();
   else if (type === 'victory') sounds.playVictory();
