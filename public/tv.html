@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Velada del Caos - Pantalla TV / Cronómetro</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@800;900&family=Chakra+Petch:wght@700;800;900&family=Inter:wght@600;700;800&display=swap">
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #06070b;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4vh 5vw;
+      user-select: none;
+      position: relative;
+    }
+
+    /* Ambient glow effects */
+    body::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 10%;
+      width: 40vw;
+      height: 40vw;
+      background: radial-gradient(circle, rgba(255, 30, 86, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      right: 10%;
+      width: 40vw;
+      height: 40vw;
+      background: radial-gradient(circle, rgba(0, 210, 211, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* HEADER */
+    .tv-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .event-title {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: clamp(20px, 3.5vw, 42px);
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #ffd32a;
+      text-transform: uppercase;
+      text-shadow: 0 0 25px rgba(255, 211, 42, 0.4);
+    }
+
+    .phase-badge {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: clamp(14px, 2vw, 24px);
+      font-weight: 800;
+      padding: 8px 24px;
+      border-radius: 30px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .phase-badge.fighting {
+      background: #2ed573;
+      color: #06070b;
+      box-shadow: 0 0 30px rgba(46, 213, 115, 0.5);
+    }
+
+    .phase-badge.paused {
+      background: #ff4757;
+      color: #fff;
+      box-shadow: 0 0 30px rgba(255, 71, 87, 0.5);
+    }
+
+    .phase-badge.rest {
+      background: #ffa502;
+      color: #06070b;
+      box-shadow: 0 0 30px rgba(255, 165, 2, 0.5);
+    }
+
+    .phase-badge.protection {
+      background: #ff1e56;
+      color: #fff;
+      box-shadow: 0 0 35px rgba(255, 30, 86, 0.8);
+      animation: flash 0.5s infinite alternate;
+    }
+
+    /* CENTER STAGE: GIANT TIMER & ROUND */
+    .timer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 10;
+      width: 100%;
+    }
+
+    .round-tag {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: clamp(28px, 5.5vw, 68px);
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: #f1f2f6;
+      text-transform: uppercase;
+      margin-bottom: 2vh;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    }
+
+    .giant-clock {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: clamp(80px, 24vw, 320px);
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: 4px;
+      color: #ffffff;
+      text-shadow: 0 0 60px rgba(255, 255, 255, 0.35);
+      font-variant-numeric: tabular-nums;
+      margin: 1vh 0 3vh;
+    }
+
+    .giant-clock.urgent {
+      color: #ff4757;
+      text-shadow: 0 0 80px rgba(255, 71, 87, 0.8);
+      animation: urgentPulse 0.5s infinite alternate;
+    }
+
+    .giant-clock.rest-mode {
+      color: #ffd32a;
+      text-shadow: 0 0 80px rgba(255, 211, 42, 0.6);
+    }
+
+    /* PROGRESS BAR */
+    .progress-track {
+      width: 75vw;
+      max-width: 1200px;
+      height: clamp(10px, 1.8vh, 22px);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ffd32a, #ff1e56);
+      transition: width 1s linear;
+      box-shadow: 0 0 20px rgba(255, 211, 42, 0.6);
+    }
+
+    /* FOOTER CORNER DISPLAY */
+    .tv-footer {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      padding-top: 2vh;
+    }
+
+    .corner-tag {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: clamp(16px, 2.5vw, 32px);
+      font-weight: 800;
+      padding: 10px 24px;
+      border-radius: 14px;
+      max-width: 40vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .corner-tag.red {
+      color: #fff;
+      background: rgba(255, 30, 86, 0.2);
+      border: 2px solid #ff1e56;
+      box-shadow: 0 0 25px rgba(255, 30, 86, 0.3);
+    }
+
+    .corner-tag.blue {
+      color: #fff;
+      background: rgba(0, 210, 211, 0.2);
+      border: 2px solid #00d2d3;
+      box-shadow: 0 0 25px rgba(0, 210, 211, 0.3);
+      text-align: right;
+    }
+
+    /* ANIMATIONS */
+    @keyframes urgentPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    @keyframes flash {
+      from { opacity: 1; }
+      to { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TV TOP BAR -->
+  <header class="tv-header">
+    <div class="event-title">🥊 LA VELADA DEL CAOS</div>
+    <div class="phase-badge" id="tvPhaseBadge">EN ESPERA</div>
+  </header>
+
+  <!-- TV CENTER CLOCK -->
+  <main class="timer-container">
+    <div class="round-tag" id="tvRoundTag">ROUND 1 / 3</div>
+    <div class="giant-clock" id="tvClock">01:30</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="tvProgressFill" style="width: 100%;"></div>
+    </div>
+  </main>
+
+  <!-- TV FOOTER (FIGHTERS) -->
+  <footer class="tv-footer">
+    <div class="corner-tag red" id="tvRedName">🔴 Esquina Roja</div>
+    <div class="corner-tag blue" id="tvBlueName">🔵 Esquina Azul</div>
+  </footer>
+
+  <script>
+    const socket = io();
+
+    const tvPhaseBadge = document.getElementById('tvPhaseBadge');
+    const tvRoundTag = document.getElementById('tvRoundTag');
+    const tvClock = document.getElementById('tvClock');
+    const tvProgressFill = document.getElementById('tvProgressFill');
+    const tvRedName = document.getElementById('tvRedName');
+    const tvBlueName = document.getElementById('tvBlueName');
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    socket.on('state_update', (state) => {
+      // Fighters
+      tvRedName.textContent = `🔴 ${state.redFighter || 'Esquina Roja'}`;
+      tvBlueName.textContent = `${state.blueFighter || 'Esquina Azul'} 🔵`;
+
+      // Reset classes
+      tvClock.className = 'giant-clock';
+      tvPhaseBadge.className = 'phase-badge';
+
+      if (state.phase === 'fighting') {
+        tvPhaseBadge.classList.add('fighting');
+        tvPhaseBadge.textContent = 'COMBATE ACTIVO';
+        tvRoundTag.textContent = `ROUND ${state.currentRound} / ${state.maxRounds}`;
+        tvClock.textContent = formatTime(state.roundTimeLeft);
+        
+        const pct = (state.roundTimeLeft / state.roundDuration) * 100;
+        tvProgressFill.style.width = `${pct}%`;
+        
+        if (state.roundTimeLeft <= 10 && state.roundTimeLeft > 0) {
+          tvClock.classList.add('urgent');
+        }
+      } else if (state.phase === 'paused') {
+        tvPhaseBadge.classList.add('paused');
+        tvPhaseBadge.textContent = 'PAUSA (¡STOP!)';
+        tvRoundTag.textContent = `ROUND ${state.currentRound} / ${state.maxRounds}`;
+        tvClock.textContent = formatTime(state.roundTimeLeft);
+      } else if (state.phase === 'rest') {
+        tvPhaseBadge.classList.add('rest');
+        tvPhaseBadge.textContent = 'MINUTO DE DESCANSO';
+        tvRoundTag.textContent = `DESCANSO • R${state.currentRound}`;
+        tvClock.classList.add('rest-mode');
+        tvClock.textContent = formatTime(state.restTimeLeft);
+        
+        const pct = (state.restTimeLeft / state.restDuration) * 100;
+        tvProgressFill.style.width = `${pct}%`;
+        
+        if (state.restTimeLeft <= 10) {
+          tvClock.classList.add('urgent');
+          tvPhaseBadge.textContent = '¡SEGUNDOS AFUERA!';
+        }
+      } else if (state.phase === 'protection') {
+        tvPhaseBadge.classList.add('protection');
+        tvPhaseBadge.textContent = 'CUENTA DE PROTECCIÓN';
+        tvRoundTag.textContent = 'CUENTA REGLAMENTARIA (8-COUNT)';
+        tvClock.classList.add('urgent');
+        tvClock.textContent = `00:0${state.protectionCount}`;
+        tvProgressFill.style.width = `${(state.protectionCount / 8) * 100}%`;
+      } else if (state.phase === 'finished') {
+        tvPhaseBadge.textContent = 'FINALIZADO';
+        tvRoundTag.textContent = 'FIN DEL COMBATE';
+        tvClock.textContent = '00:00';
+        tvProgressFill.style.width = '0%';
+      } else {
+        // Idle
+        tvPhaseBadge.textContent = 'EN ESPERA';
+        tvRoundTag.textContent = 'LISTOS PARA EL ROUND 1';
+        tvClock.textContent = '01:30';
+        tvProgressFill.style.width = '100%';
+      }
+    });
+  </script>
+</body>
+</html>

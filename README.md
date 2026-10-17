@@ -18,6 +18,7 @@ Sistema web en tiempo real desarrollado para eventos de boxeo en vivo con ruleta
 
 3. **Acceder a las interfaces en local**:
    - 📺 **Overlay para Stream (OBS / Espectadores)**: [http://localhost:3000/overlay](http://localhost:3000/overlay)
+   - 📺 **Pantalla TV / Reloj Gigante (Televisores de Estadio)**: [http://localhost:3000/tv](http://localhost:3000/tv)
    - 🎛️ **Panel del Moderador / Jueces**: [http://localhost:3000/admin](http://localhost:3000/admin)
 
 ---
@@ -25,6 +26,7 @@ Sistema web en tiempo real desarrollado para eventos de boxeo en vivo con ruleta
 ## 🌐 Enlaces en Vivo (Producción en Railway)
 
 - 📺 **Stream Overlay (OBS Browser Source)**: [https://ruleta-box-production.up.railway.app/overlay](https://ruleta-box-production.up.railway.app/overlay)
+- 📺 **Pantalla TV / Reloj Gigante**: [https://ruleta-box-production.up.railway.app/tv](https://ruleta-box-production.up.railway.app/tv)
 - 🎛️ **Panel del Moderador / Árbitro**: [https://ruleta-box-production.up.railway.app/admin](https://ruleta-box-production.up.railway.app/admin)
 
 > 💡 **Nota de red local:** El moderador puede abrir el panel desde un celular, tablet o laptop conectada al mismo Wi-Fi ingresando a `http://TU_IP_LOCAL:3000/admin` (por ejemplo `http://192.168.1.50:3000/admin`).

@@ -22,6 +22,14 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+app.get('/tv', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'tv.html'));
+});
+
+app.get('/timer', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'tv.html'));
+});
+
 // State Management
 function createInitialState() {
   return {
@@ -179,8 +187,9 @@ function startTimer() {
         io.emit('sound_trigger', 'tick');
         if (state.protectionCount === 0) {
           state.protectionRunning = false;
-          state.phase = 'paused';
-          logEvent('⏱️ Cuenta de protección de 8 segundos completada.');
+          state.phase = 'fighting';
+          io.emit('sound_trigger', 'bell');
+          logEvent('⏱️ Cuenta de protección de 8 segundos completada. ¡Combate reanudado ("¡BOX!")!');
         }
       }
       broadcastState();
