@@ -41,6 +41,8 @@
         <div class="round-progress-bar">
           <div class="round-progress-fill" id="roundProgressFill" style="width: 100%;"></div>
         </div>
+        <!-- Discreet persistent rule indicator in top bar -->
+        <div class="top-active-rule-pill" id="topActiveRulePill" style="display: none;"></div>
       </div>
 
       <!-- BLUE TEAM -->
@@ -64,26 +66,25 @@
       <p id="bannerDesc">Asistentes abandonar el ring. Protectores bucales listos.</p>
     </div>
 
-    <!-- LOWER SECTION: ROULETTE & RULE CARD -->
-    <div class="mid-section">
-      <!-- ROULETTE WHEEL -->
-      <div class="roulette-container">
+    <!-- BOTTOM HUD DOCK (ROULETTE ON LEFT, RULE CARD ON RIGHT) -->
+    <div class="bottom-hud-dock">
+      <!-- ROULETTE WHEEL (BOTTOM LEFT - APPEARS, SPINS FAST, THEN DISAPPEARS) -->
+      <div class="roulette-container" id="rouletteContainer">
         <div class="wheel-wrapper">
           <div class="wheel-pointer"></div>
           <canvas id="rouletteWheel" width="500" height="500"></canvas>
           <div class="wheel-center-cap" id="wheelCenterCap">🥊</div>
         </div>
         <div class="roulette-timer-badge">
-          <span>Próximo Giro:</span>
-          <span class="spin-countdown" id="spinCountdown">15s</span>
+          <span>Ruleta del Caos</span>
         </div>
       </div>
 
-      <!-- ACTIVE RULE CARD -->
+      <!-- ACTIVE RULE CARD (BOTTOM RIGHT - APPEARS, SHOWS EXPLANATION, THEN FADES OUT) -->
       <div class="active-rule-card" id="activeRuleCard">
         <div class="rule-header">
           <div class="rule-category-tag">
-            <span>⚡ REGLA ACTIVA</span>
+            <span>⚡ NUEVA REGLA ACTIVA</span>
             <span id="ruleCategory">• COMBATE</span>
           </div>
           <div class="rule-points-badge" id="rulePointsBadge">+10 PTS</div>

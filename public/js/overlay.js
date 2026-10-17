@@ -38,6 +38,11 @@ const recapBlueBreakdownEl = document.getElementById('recapBlueBreakdown');
 const audioToggleBtn = document.getElementById('audioToggle');
 const audioIcon = document.getElementById('audioIcon');
 const audioText = document.getElementById('audioText');
+const rouletteContainerEl = document.getElementById('rouletteContainer');
+const topActiveRulePillEl = document.getElementById('topActiveRulePill');
+
+let rouletteHideTimeout = null;
+let ruleCardHideTimeout = null;
 
 // URL parameters & OBS Detection
 const urlParams = new URLSearchParams(window.location.search);
@@ -159,10 +164,44 @@ function drawWheel(angle = 0) {
 // Initial draw
 drawWheel(currentAngle);
 
+// Display rule card on bottom-right and fade out after reading time
+function displayRuleCard(rule) {
+  if (!rule) return;
+  ruleCategoryEl.textContent = `• ${rule.category || 'COMBATE'}`;
+  rulePointsBadgeEl.textContent = rule.pts > 0 ? `+${rule.pts} PTS` : 'RELEVO';
+  rulePointsBadgeEl.className = `rule-points-badge ${rule.pts === 0 ? 'zero' : ''}`;
+  ruleIconEl.textContent = rule.icon ? rule.icon.split(' ')[0] : '🥊';
+  ruleNameEl.textContent = rule.name;
+  ruleDescEl.textContent = rule.description;
+
+  // Show active rule card on bottom-right
+  activeRuleCardEl.classList.add('visible');
+
+  // Update top persistent rule pill
+  if (topActiveRulePillEl) {
+    topActiveRulePillEl.style.display = 'block';
+    topActiveRulePillEl.innerHTML = `${rule.icon ? rule.icon.split(' ')[0] : '🥊'} ${rule.name} • ${rule.pts > 0 ? '+' + rule.pts + ' PTS' : 'RELEVO'}`;
+  }
+
+  // Stay visible for 7.5 seconds so it can be read comfortably, then fade out!
+  if (ruleCardHideTimeout) clearTimeout(ruleCardHideTimeout);
+  ruleCardHideTimeout = setTimeout(() => {
+    activeRuleCardEl.classList.remove('visible');
+  }, 7500);
+}
+
 // Spin Animation Function
-function animateSpin(targetRule, duration = 3500) {
+function animateSpin(targetRule, duration = 4000) {
   if (isSpinning) return;
   isSpinning = true;
+
+  // Make roulette appear on bottom-left
+  if (rouletteHideTimeout) clearTimeout(rouletteHideTimeout);
+  if (ruleCardHideTimeout) clearTimeout(ruleCardHideTimeout);
+  if (rouletteContainerEl) rouletteContainerEl.classList.add('visible');
+
+  // Hide rule card during active spinning to focus on the wheel
+  activeRuleCardEl.classList.remove('visible');
   activeRuleCardEl.classList.add('spinning');
 
   const numSlices = currentRules.length;
@@ -171,13 +210,11 @@ function animateSpin(targetRule, duration = 3500) {
   const safeTargetIndex = targetIndex >= 0 ? targetIndex : 0;
 
   // The pointer is at the TOP (angle = 3 * Math.PI / 2 or -Math.PI / 2)
-  // We want the center of safeTargetIndex slice to align with top (-PI/2)
-  // angle + safeTargetIndex * sliceAngle + sliceAngle/2 = 3 * PI / 2 (mod 2PI)
   const pointerAngle = (3 * Math.PI) / 2;
   const targetSliceMid = safeTargetIndex * sliceAngle + sliceAngle / 2;
   
-  // Calculate final angle with at least 5-7 full spins
-  const extraSpins = 6 * 2 * Math.PI;
+  // INCREASE SPINS: 14 full rotations for maximum excitement & momentum!
+  const extraSpins = 14 * 2 * Math.PI;
   const normalizedCurrent = currentAngle % (2 * Math.PI);
   let finalAngle = pointerAngle - targetSliceMid;
   while (finalAngle < normalizedCurrent + extraSpins) {
@@ -193,12 +230,12 @@ function animateSpin(targetRule, duration = 3500) {
     const elapsed = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
     
-    // Ease out cubic
-    const easeOut = 1 - Math.pow(1 - progress, 3);
+    // Dynamic cubic bezier ease out
+    const easeOut = 1 - Math.pow(1 - progress, 3.5);
     currentAngle = startAngle + totalChange * easeOut;
 
     // Sound tick on passing each slice
-    if (Math.abs(currentAngle - lastTickAngle) >= sliceAngle * 0.8) {
+    if (Math.abs(currentAngle - lastTickAngle) >= sliceAngle * 0.7) {
       sounds.playTick();
       lastTickAngle = currentAngle;
     }
@@ -213,6 +250,14 @@ function animateSpin(targetRule, duration = 3500) {
       isSpinning = false;
       activeRuleCardEl.classList.remove('spinning');
       sounds.playRuleSelected();
+
+      // Show rule card on bottom-right for reading
+      displayRuleCard(targetRule);
+
+      // Keep roulette visible for 2.5s so viewer sees where it landed, then fade out!
+      rouletteHideTimeout = setTimeout(() => {
+        if (rouletteContainerEl) rouletteContainerEl.classList.remove('visible');
+      }, 2500);
     }
   }
 
@@ -357,39 +402,30 @@ function updateOverlay(state) {
     roundProgressFillEl.style.width = `100%`;
   }
 
-  // Spin Countdown
-  if (state.phase === 'fighting') {
-    spinCountdownEl.textContent = `${state.rouletteTimeLeft}s`;
-    const rProgress = (state.rouletteTimeLeft / state.rouletteInterval) * 100;
-    ruleTimerFillEl.style.width = `${rProgress}%`;
-  } else {
-    spinCountdownEl.textContent = `--`;
-    ruleTimerFillEl.style.width = `0%`;
+  // Spin countdown & progress bar
+  if (ruleTimerFillEl) {
+    if (state.phase === 'fighting') {
+      const rProgress = (state.rouletteTimeLeft / state.rouletteInterval) * 100;
+      ruleTimerFillEl.style.width = `${rProgress}%`;
+    } else {
+      ruleTimerFillEl.style.width = `0%`;
+    }
   }
 
-  // Active Rule Card
-  if (state.currentRule) {
-    activeRuleCardEl.classList.remove('hidden');
-    ruleCategoryEl.textContent = `• ${state.currentRule.category || 'COMBATE'}`;
-    rulePointsBadgeEl.textContent = state.currentRule.pts > 0 ? `+${state.currentRule.pts} PTS` : 'RELEVO';
-    rulePointsBadgeEl.className = `rule-points-badge ${state.currentRule.pts === 0 ? 'zero' : ''}`;
-    ruleIconEl.textContent = state.currentRule.icon || '🥊';
-    ruleNameEl.textContent = state.currentRule.name;
-    ruleDescEl.textContent = state.currentRule.description;
-  } else if (state.phase === 'rest') {
-    ruleCategoryEl.textContent = '• PAUSA REGLAMENTARIA';
-    rulePointsBadgeEl.textContent = 'PAUSA';
-    ruleIconEl.textContent = '⏳';
-    ruleNameEl.textContent = 'Minuto de Descanso';
-    ruleDescEl.textContent = 'Hidratación y táctica en esquinas. Los peleadores deben atender a sus entrenadores.';
-    ruleTimerFillEl.style.width = '0%';
-  } else if (state.phase === 'finished') {
-    ruleCategoryEl.textContent = '• FIN DE LA PELEA';
-    rulePointsBadgeEl.textContent = 'FINAL';
-    ruleIconEl.textContent = '🏆';
-    ruleNameEl.textContent = 'Esperando Decisión';
-    ruleDescEl.textContent = 'Los 3 rounds reglamentarios han finalizado. Las tarjetas de puntuación se están evaluando.';
-    ruleTimerFillEl.style.width = '0%';
+  // Active Rule & Top persistent pill
+  if (state.currentRule && state.phase === 'fighting') {
+    if (topActiveRulePillEl) {
+      topActiveRulePillEl.style.display = 'block';
+      topActiveRulePillEl.innerHTML = `${state.currentRule.icon ? state.currentRule.icon.split(' ')[0] : '🥊'} ${state.currentRule.name} • ${state.currentRule.pts > 0 ? '+' + state.currentRule.pts + ' PTS' : 'RELEVO'}`;
+    }
+  } else {
+    if (topActiveRulePillEl) {
+      topActiveRulePillEl.style.display = 'none';
+    }
+    if (state.phase === 'rest' || state.phase === 'finished') {
+      activeRuleCardEl.classList.remove('visible');
+      if (rouletteContainerEl) rouletteContainerEl.classList.remove('visible');
+    }
   }
 
   // Winner Celebration Screen

@@ -81,7 +81,7 @@ function executeRouletteSpin(forcedRule = null) {
   if (!chosenRule) return;
 
   state.rouletteSpinning = true;
-  io.emit('spin_started', { rule: chosenRule, duration: 3500 });
+  io.emit('spin_started', { rule: chosenRule, duration: 4000 });
   logEvent(`🎰 Giro de ruleta iniciado: ${chosenRule.name}`);
 
   setTimeout(() => {
@@ -89,7 +89,7 @@ function executeRouletteSpin(forcedRule = null) {
     state.rouletteSpinning = false;
     io.emit('spin_completed', { rule: chosenRule });
     broadcastState();
-  }, 3500);
+  }, 4000);
 }
 
 function startTimer() {
