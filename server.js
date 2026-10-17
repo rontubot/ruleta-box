@@ -82,7 +82,7 @@ function createInitialState(mode = '1v1') {
     rouletteInterval: 30,
     rouletteTimeLeft: 30,
     currentRule: null,
-    ruleDuration: 30,
+    ruleDuration: 15,
     ruleTimeLeft: 0,
     rouletteSpinning: false,
     protectionCount: 0,
@@ -176,10 +176,10 @@ function executeRouletteSpin(forcedRule = null) {
 
   setTimeout(() => {
     state.currentRule = chosenRule;
-    state.ruleDuration = 30;
-    state.ruleTimeLeft = 30;
+    state.ruleDuration = 15;
+    state.ruleTimeLeft = 15;
     state.rouletteSpinning = false;
-    io.emit('spin_completed', { rule: chosenRule, duration: 30 });
+    io.emit('spin_completed', { rule: chosenRule, duration: 15 });
     broadcastState();
   }, 4000);
 }

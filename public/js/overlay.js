@@ -432,7 +432,7 @@ function updateOverlay(state) {
   const isRuleActive = state.currentRule && state.ruleTimeLeft > 0 && (state.phase === 'fighting' || state.phase === 'paused');
 
   if (isRuleActive) {
-    const duration = state.ruleDuration || 30;
+    const duration = state.ruleDuration || 15;
     const rProgress = (state.ruleTimeLeft / duration) * 100;
     if (ruleTimerFillEl) {
       ruleTimerFillEl.style.width = `${rProgress}%`;

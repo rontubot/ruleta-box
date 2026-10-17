@@ -416,7 +416,7 @@ function renderAdminUI(state) {
 
     if (adminEventTimeLeft && adminEventProgressFill) {
       adminEventTimeLeft.textContent = `⏳ ${state.ruleTimeLeft}s restantes`;
-      const ruleDuration = state.ruleDuration || 30;
+      const ruleDuration = state.ruleDuration || 15;
       const pct = (state.ruleTimeLeft / ruleDuration) * 100;
       adminEventProgressFill.style.width = `${pct}%`;
     }

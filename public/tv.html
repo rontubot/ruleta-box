@@ -600,7 +600,7 @@
           tvEventCountdown.classList.remove('urgent');
         }
 
-        const ruleDuration = state.ruleDuration || 30;
+        const ruleDuration = state.ruleDuration || 15;
         const rulePct = (state.ruleTimeLeft / ruleDuration) * 100;
         tvEventProgressFill.style.width = `${rulePct}%`;
       } else {
