@@ -76,6 +76,26 @@ adminAudioBtn.addEventListener('click', () => {
   sounds.playBell();
 });
 
+// Copy OBS URL Button
+const copyObsLinkBtn = document.getElementById('copyObsLinkBtn');
+if (copyObsLinkBtn) {
+  copyObsLinkBtn.addEventListener('click', () => {
+    const obsUrl = `${window.location.origin}/overlay?obs=1`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(obsUrl).then(() => {
+        copyObsLinkBtn.textContent = '✅ ¡Copiado!';
+        setTimeout(() => {
+          copyObsLinkBtn.textContent = '📋 Copiar URL para OBS';
+        }, 2000);
+      }).catch(() => {
+        prompt('Copia esta URL para OBS:', obsUrl);
+      });
+    } else {
+      prompt('Copia esta URL para OBS:', obsUrl);
+    }
+  });
+}
+
 // Save match configuration
 saveConfigBtn.addEventListener('click', () => {
   const mode = matchModeSelect.value;

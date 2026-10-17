@@ -39,6 +39,24 @@ const audioToggleBtn = document.getElementById('audioToggle');
 const audioIcon = document.getElementById('audioIcon');
 const audioText = document.getElementById('audioText');
 
+// URL parameters & OBS Detection
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('obs') || urlParams.has('clean') || window.obsstudio) {
+  document.body.classList.add('obs-mode');
+}
+
+// Optional manual scaling parameter (e.g. ?scale=0.85 or ?scale=0.7)
+if (urlParams.has('scale')) {
+  const customScale = parseFloat(urlParams.get('scale'));
+  if (!isNaN(customScale) && customScale > 0) {
+    const overlayContainer = document.querySelector('.stream-overlay');
+    if (overlayContainer) {
+      overlayContainer.style.transform = `scale(${customScale})`;
+      overlayContainer.style.transformOrigin = 'top center';
+    }
+  }
+}
+
 // Audio unlock
 let audioEnabled = false;
 function enableAudio() {
@@ -46,7 +64,7 @@ function enableAudio() {
   sounds.init();
   audioIcon.textContent = '🔊';
   audioText.textContent = 'Audio Activo';
-  audioToggleBtn.style.opacity = '0.5';
+  audioToggleBtn.style.opacity = '0.15';
 }
 
 audioToggleBtn.addEventListener('click', () => {
@@ -58,6 +76,7 @@ audioToggleBtn.addEventListener('click', () => {
   if (sounds.muted) {
     audioIcon.textContent = '🔇';
     audioText.textContent = 'Mute';
+    audioToggleBtn.style.opacity = '0.7';
   } else {
     enableAudio();
   }
@@ -67,6 +86,13 @@ audioToggleBtn.addEventListener('click', () => {
 window.addEventListener('click', () => {
   if (!audioEnabled) enableAudio();
 }, { once: true });
+
+// Auto fade audio button after 3 seconds
+setTimeout(() => {
+  if (audioToggleBtn && !sounds.muted) {
+    audioToggleBtn.style.opacity = '0.15';
+  }
+}, 3000);
 
 // Canvas Roulette Wheel
 const canvas = document.getElementById('rouletteWheel');
@@ -110,15 +136,15 @@ function drawWheel(angle = 0) {
     ctx.rotate(startA + sliceAngle / 2);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 22px "Chakra Petch", sans-serif';
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 6;
+    ctx.font = 'bold 28px "Chakra Petch", sans-serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+    ctx.shadowBlur = 8;
 
     // Truncate name if too long for slice
     let displayName = rule.name;
-    if (displayName.length > 13) displayName = displayName.substring(0, 11) + '..';
+    if (displayName.length > 14) displayName = displayName.substring(0, 12) + '..';
 
-    ctx.fillText(`${rule.icon ? rule.icon.split(' ')[0] : '🥊'} ${displayName}`, radius - 20, 8);
+    ctx.fillText(`${rule.icon ? rule.icon.split(' ')[0] : '🥊'} ${displayName}`, radius - 16, 10);
     ctx.restore();
   }
 
