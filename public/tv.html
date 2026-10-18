@@ -762,13 +762,13 @@
     if (window.location.protocol === 'file:') {
       if (warnBanner) {
         warnBanner.style.display = 'block';
-        warnBanner.innerHTML = '❌ <strong>ERROR:</strong> Has abierto este archivo como <code>file:///</code>. Para que funcione y se sincronice, abre en el navegador la URL: <a href="https://ruleta-box-production.up.railway.app/tv" style="color: #ffd32a; font-weight: bold; text-decoration: underline;">https://ruleta-box-production.up.railway.app/tv</a>';
+        warnBanner.innerHTML = '❌ <strong>ERROR:</strong> Has abierto este archivo como <code>file:///</code>. Para que funcione y se sincronice, abre en el navegador la URL: <a href="https://ruleta-box-production.up.railway.app/tv" target="_blank" rel="noopener noreferrer" style="color: #ffd32a; font-weight: bold; text-decoration: underline;">https://ruleta-box-production.up.railway.app/tv ↗</a>';
       }
     } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       if (warnBanner) {
         warnBanner.style.display = 'block';
         warnBanner.style.background = '#d35400';
-        warnBanner.innerHTML = '⚠️ <strong>AVISO:</strong> Estás en <code>localhost</code> (solo esta máquina). Si vas a conectar otra PC o TV, ambas deben entrar a: <a href="https://ruleta-box-production.up.railway.app/tv" style="color: #ffd32a; font-weight: bold; text-decoration: underline;">https://ruleta-box-production.up.railway.app/tv</a> <button onclick="this.parentElement.style.display=\'none\'" style="margin-left: 12px; background: rgba(0,0,0,0.5); border: 1px solid #fff; color: #fff; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Cerrar aviso</button>';
+        warnBanner.innerHTML = '⚠️ <strong>AVISO:</strong> Estás en <code>localhost</code> (solo esta máquina). Si vas a conectar otra PC o TV, ambas deben entrar a: <a href="https://ruleta-box-production.up.railway.app/tv" target="_blank" rel="noopener noreferrer" style="color: #ffd32a; font-weight: bold; text-decoration: underline;">https://ruleta-box-production.up.railway.app/tv ↗</a> <button onclick="this.parentElement.style.display=\'none\'" style="margin-left: 12px; background: rgba(0,0,0,0.5); border: 1px solid #fff; color: #fff; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Cerrar aviso</button>';
       }
     }
 

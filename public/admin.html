@@ -26,13 +26,10 @@
       <button id="copyObsLinkBtn" class="btn btn-primary" style="font-size: 13px;">
         📋 Copiar URL para OBS
       </button>
-      <button id="copyTvLinkBtn" class="btn btn-warning" style="font-size: 13px; color: #000; font-weight: 800;">
-        📺 Copiar URL para TV
-      </button>
-      <a href="/tv" target="_blank" class="btn-overlay-link" style="border-color: #ffd32a; color: #ffd32a;">
+      <a href="/tv" target="_blank" rel="noopener noreferrer" class="btn btn-warning" style="font-size: 13px; color: #000; font-weight: 800;">
         📺 Abrir Pantalla TV ↗
       </a>
-      <a href="/overlay" target="_blank" class="btn-overlay-link">
+      <a href="/overlay" target="_blank" rel="noopener noreferrer" class="btn btn-dark" style="font-size: 13px;">
         🖥️ Ver Overlay ↗
       </a>
       <button id="adminAudioBtn" class="btn btn-dark" style="font-size: 13px;">
@@ -58,10 +55,13 @@
         </p>
       </div>
     </div>
-    <div style="display: flex; gap: 8px;">
-      <button id="copyShareAdminBtn" class="btn btn-dark" style="font-size: 12px;">
-        📋 Compartir Enlace Admin
-      </button>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="/tv" target="_blank" rel="noopener noreferrer" class="btn btn-warning" style="font-size: 12px; font-weight: 800; color: #000; padding: 8px 14px;">
+        📺 Abrir Pantalla TV ↗
+      </a>
+      <a href="/overlay" target="_blank" rel="noopener noreferrer" class="btn btn-dark" style="font-size: 12px; font-weight: 700; padding: 8px 14px;">
+        🖥️ Abrir Overlay ↗
+      </a>
     </div>
   </div>
 
