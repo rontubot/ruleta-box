@@ -881,20 +881,24 @@
         tvProgressFill.style.width = '100%';
       }
 
-      // Event Display Below Clock (Always visible during active event)
-      if (state.currentRule && state.ruleTimeLeft > 0 && (state.phase === 'fighting' || state.phase === 'paused')) {
+      // Event Display Below Clock (Supports Preview and Active modes)
+      const hasRule = state.currentRule && (state.phase === 'fighting' || state.phase === 'paused');
+      const isPreview = hasRule && state.ruleState === 'preview';
+      const isActive = hasRule && (state.ruleState === 'active' || (!state.ruleState && state.ruleTimeLeft > 0));
+
+      if (isPreview || isActive) {
         tvEventCard.style.display = 'flex';
         tvNextSpinPill.style.display = 'none';
 
         tvEventCard.className = 'tv-event-card';
         if (state.currentRule.targetTeam === 'red') {
           tvEventCard.classList.add('team-red');
-          tvEventBadge.innerHTML = '⚡ RETO EXCLUSIVO: ESQUINA ROJA';
+          tvEventBadge.innerHTML = isPreview ? '📢 AVISO PREVIO: ESQUINA ROJA' : '⚡ RETO EXCLUSIVO: ESQUINA ROJA';
         } else if (state.currentRule.targetTeam === 'blue') {
           tvEventCard.classList.add('team-blue');
-          tvEventBadge.innerHTML = '⚡ RETO EXCLUSIVO: ESQUINA AZUL';
+          tvEventBadge.innerHTML = isPreview ? '📢 AVISO PREVIO: ESQUINA AZUL' : '⚡ RETO EXCLUSIVO: ESQUINA AZUL';
         } else {
-          tvEventBadge.innerHTML = '⚡ EVENTO ACTIVO DE RULETA';
+          tvEventBadge.innerHTML = isPreview ? '📢 AVISO PREVIO: PRÓXIMO RETO' : '⚡ EVENTO EN VIVO DE RULETA';
         }
 
         tvEventIcon.textContent = state.currentRule.icon ? state.currentRule.icon.split(' ')[0] : '🥊';
@@ -902,16 +906,21 @@
         tvEventDesc.textContent = state.currentRule.description || '';
         tvEventPts.textContent = state.currentRule.pts > 0 ? `+${state.currentRule.pts} PTS` : 'RELEVO';
 
-        tvEventCountdown.textContent = `⏱️ QUEDAN ${state.ruleTimeLeft}s`;
-        if (state.ruleTimeLeft <= 5) {
-          tvEventCountdown.classList.add('urgent');
-        } else {
+        if (isPreview) {
+          tvEventCountdown.textContent = `⏳ COMIENZA EN ${state.ruleStartsIn !== undefined ? state.ruleStartsIn : 0}s`;
           tvEventCountdown.classList.remove('urgent');
+          tvEventProgressFill.style.width = '100%';
+        } else {
+          tvEventCountdown.textContent = `⏱️ QUEDAN ${state.ruleTimeLeft}s`;
+          if (state.ruleTimeLeft <= 5) {
+            tvEventCountdown.classList.add('urgent');
+          } else {
+            tvEventCountdown.classList.remove('urgent');
+          }
+          const ruleDuration = state.ruleDuration || 15;
+          const rulePct = (state.ruleTimeLeft / ruleDuration) * 100;
+          tvEventProgressFill.style.width = `${rulePct}%`;
         }
-
-        const ruleDuration = state.ruleDuration || 15;
-        const rulePct = (state.ruleTimeLeft / ruleDuration) * 100;
-        tvEventProgressFill.style.width = `${rulePct}%`;
       } else {
         tvEventCard.style.display = 'none';
         if (state.phase === 'fighting' && state.rouletteTimeLeft > 0) {

@@ -472,8 +472,21 @@ function renderAdminUI(state) {
   }
 
   // Rule preview & Persistent Event Timer Bar (Always visible in Admin)
-  if (state.currentRule && state.ruleTimeLeft > 0 && (state.phase === 'fighting' || state.phase === 'paused')) {
-    adminRuleTitle.textContent = `${state.currentRule.icon || '🥊'} ${state.currentRule.fullName || state.currentRule.name}`;
+  const hasRule = state.currentRule && (state.phase === 'fighting' || state.phase === 'paused');
+  const isPreview = hasRule && state.ruleState === 'preview';
+  const isActive = hasRule && (state.ruleState === 'active' || (!state.ruleState && state.ruleTimeLeft > 0));
+
+  if (isPreview) {
+    adminRuleTitle.textContent = `📢 AVISO PREVIO: ${state.currentRule.icon || '🥊'} ${state.currentRule.fullName || state.currentRule.name}`;
+    adminRuleBadge.textContent = 'PRÓXIMO RETO';
+    adminRuleDesc.textContent = state.currentRule.description;
+
+    if (adminEventTimeLeft && adminEventProgressFill) {
+      adminEventTimeLeft.textContent = `⏳ Comienza en ${state.ruleStartsIn !== undefined ? state.ruleStartsIn : 0}s (Duración: 15s)`;
+      adminEventProgressFill.style.width = '100%';
+    }
+  } else if (isActive) {
+    adminRuleTitle.textContent = `⚡ EN VIVO: ${state.currentRule.icon || '🥊'} ${state.currentRule.fullName || state.currentRule.name}`;
     adminRuleBadge.textContent = state.currentRule.pts > 0 ? `+${state.currentRule.pts} PTS` : 'RELEVO';
     adminRuleDesc.textContent = state.currentRule.description;
 
@@ -500,7 +513,7 @@ function renderAdminUI(state) {
     } else {
       adminRuleTitle.textContent = '🥊 Esperando inicio / siguiente giro';
       adminRuleBadge.textContent = 'RULETA';
-      adminRuleDesc.textContent = 'Cada 30 segundos la ruleta gira automáticamente para cambiar las condiciones reglamentarias del combate.';
+      adminRuleDesc.textContent = 'La ruleta gira 5s antes del segundo 30 para mostrar un aviso previo del reto y luego activar sus 15s exactos.';
     }
   }
 

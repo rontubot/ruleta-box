@@ -84,6 +84,8 @@ function createInitialState(mode = '1v1') {
     currentRule: null,
     ruleDuration: 15,
     ruleTimeLeft: 0,
+    ruleState: 'idle', // 'idle' | 'preview' | 'active'
+    ruleStartsIn: 0,
     rouletteSpinning: false,
     protectionCount: 0,
     protectionRunning: false,
@@ -166,22 +168,28 @@ function selectRandomRule() {
   return picked;
 }
 
+const SPIN_ANIMATION_MS = 2200;
+
 function executeRouletteSpin(forcedRule = null) {
   const chosenRule = forcedRule || selectRandomRule();
   if (!chosenRule) return;
 
   state.rouletteSpinning = true;
-  io.emit('spin_started', { rule: chosenRule, duration: 4000 });
-  logEvent(`🎰 Giro de ruleta iniciado: ${chosenRule.name}`);
+  io.emit('spin_started', { rule: chosenRule, duration: SPIN_ANIMATION_MS });
+  logEvent(`🎰 Giro de ruleta rápido: ${chosenRule.name} (Aviso previo de 5s)`);
+  broadcastState();
 
   setTimeout(() => {
     state.currentRule = chosenRule;
+    state.ruleState = 'preview';
+    // Preview countdown until the exact scheduled second arrives
+    state.ruleStartsIn = (state.rouletteTimeLeft > 0 && state.rouletteTimeLeft <= 5) ? state.rouletteTimeLeft : 3;
     state.ruleDuration = 15;
-    state.ruleTimeLeft = 15;
+    state.ruleTimeLeft = 15; // No descuenta tiempo todavía mientras se lee el aviso previo
     state.rouletteSpinning = false;
-    io.emit('spin_completed', { rule: chosenRule, duration: 15 });
+    io.emit('spin_completed', { rule: chosenRule, duration: 15, preview: true });
     broadcastState();
-  }, 4000);
+  }, SPIN_ANIMATION_MS);
 }
 
 function startTimer() {
@@ -199,20 +207,41 @@ function startTimer() {
           logEvent('🪵 ¡Últimos 10 segundos del asalto! (Sonido de tablillas)');
         }
 
-        // Conteo regresivo del evento / regla activa
-        if (state.currentRule && state.ruleTimeLeft > 0) {
-          state.ruleTimeLeft -= 1;
-          if (state.ruleTimeLeft <= 0) {
-            logEvent(`⏱️ Fin del evento: ${state.currentRule.name}`);
-            state.currentRule = null;
-            state.ruleTimeLeft = 0;
+        // Manejo del ciclo de la regla / evento (Aviso Previo -> Activo -> Fin)
+        if (state.currentRule) {
+          if (state.ruleState === 'preview') {
+            if (state.ruleStartsIn > 0) {
+              state.ruleStartsIn -= 1;
+            }
+            if (state.ruleStartsIn <= 0) {
+              state.ruleState = 'active';
+              state.ruleStartsIn = 0;
+              state.ruleTimeLeft = state.ruleDuration; // 15s completos a partir de este segundo exacto
+              io.emit('sound_trigger', 'bell');
+              logEvent(`🔥 ¡EVENTO EN VIGOR!: ${state.currentRule.name} (15 segundos)`);
+            }
+          } else if (state.ruleState === 'active') {
+            if (state.ruleTimeLeft > 0) {
+              state.ruleTimeLeft -= 1;
+              if (state.ruleTimeLeft <= 0) {
+                logEvent(`⏱️ Fin del evento: ${state.currentRule.name}`);
+                state.currentRule = null;
+                state.ruleState = 'idle';
+                state.ruleTimeLeft = 0;
+                state.ruleStartsIn = 0;
+              }
+            }
           }
         }
 
-        // Check roulette spin trigger
-        if (state.roundTimeLeft > 5 && state.rouletteTimeLeft <= 0) {
-          state.rouletteTimeLeft = state.rouletteInterval;
+        // Giro de ruleta: se activa 5 segundos ANTES de que comience el evento
+        if (state.roundTimeLeft > 10 && state.rouletteTimeLeft <= 5 && !state.rouletteSpinning && state.ruleState === 'idle') {
           executeRouletteSpin();
+        }
+
+        // Si el contador de ciclo llega a 0, reinicia el ciclo de ruleta
+        if (state.rouletteTimeLeft <= 0) {
+          state.rouletteTimeLeft = state.rouletteInterval;
         }
 
         // Round ends
@@ -353,11 +382,14 @@ function processCombatAction(action, data = {}) {
         state.roundTimeLeft = state.roundDuration;
         state.rouletteTimeLeft = state.rouletteInterval;
         state.currentRule = null;
+        state.ruleState = 'idle';
+        state.ruleStartsIn = 0;
         state.ruleTimeLeft = 0;
+        state.rouletteSpinning = false;
         state.winnerDeclaration = null;
         state.bannerAlert = null;
         io.emit('sound_trigger', 'bell');
-        logEvent('🔥 Combate iniciado - Round 1 (La ruleta girará al segundo 30)');
+        logEvent('🔥 Combate iniciado - Round 1');
       } else if (state.phase === 'paused') {
         state.phase = 'fighting';
         logEvent('▶️ Combate reanudado ("¡BOX!")');
@@ -387,7 +419,10 @@ function processCombatAction(action, data = {}) {
       state.rouletteTimeLeft = state.rouletteInterval;
       state.phase = 'paused';
       state.currentRule = null;
+      state.ruleState = 'idle';
+      state.ruleStartsIn = 0;
       state.ruleTimeLeft = 0;
+      state.rouletteSpinning = false;
       logEvent(`🔄 Round ${state.currentRound} reiniciado a 1:30`);
       break;
 
@@ -399,7 +434,10 @@ function processCombatAction(action, data = {}) {
         state.rouletteTimeLeft = state.rouletteInterval;
         state.phase = 'paused';
         state.currentRule = null;
+        state.ruleState = 'idle';
+        state.ruleStartsIn = 0;
         state.ruleTimeLeft = 0;
+        state.rouletteSpinning = false;
         logEvent(`🔢 Salto manual a Round ${state.currentRound}`);
       }
       break;

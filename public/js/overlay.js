@@ -22,6 +22,7 @@ const roundPillEl = document.getElementById('roundPill');
 const roundProgressFillEl = document.getElementById('roundProgressFill');
 const spinCountdownEl = document.getElementById('spinCountdown');
 const activeRuleCardEl = document.getElementById('activeRuleCard');
+const ruleStatusLabelEl = document.getElementById('ruleStatusLabel');
 const ruleCategoryEl = document.getElementById('ruleCategory');
 const rulePointsBadgeEl = document.getElementById('rulePointsBadge');
 const ruleTitleEl = document.getElementById('ruleTitle');
@@ -172,7 +173,7 @@ function drawWheel(angle = 0) {
 drawWheel(currentAngle);
 
 // Display rule card on bottom-right and fade out after reading time
-function displayRuleCard(rule) {
+function displayRuleCard(rule, isPreview = false) {
   if (!rule) return;
 
   const isRed = rule.targetTeam === 'red';
@@ -182,6 +183,9 @@ function displayRuleCard(rule) {
   if (isRed) activeRuleCardEl.classList.add('team-red');
   if (isBlue) activeRuleCardEl.classList.add('team-blue');
 
+  if (ruleStatusLabelEl) {
+    ruleStatusLabelEl.textContent = isPreview ? '📢 PRÓXIMO RETO' : '⚡ EVENTO EN VIVO';
+  }
   ruleCategoryEl.textContent = `• ${rule.category || 'COMBATE'}`;
   
   let badgeClass = 'rule-points-badge';
@@ -203,20 +207,23 @@ function displayRuleCard(rule) {
   if (topActiveRulePillEl) {
     topActiveRulePillEl.style.display = 'block';
     const teamPrefix = isRed ? '🔴 ' : isBlue ? '🔵 ' : '';
-    topActiveRulePillEl.innerHTML = `${rule.icon ? rule.icon.split(' ')[0] : '🥊'} ${teamPrefix}${rule.fullName || rule.name} • ${rule.pts > 0 ? '+' + rule.pts + ' PTS' : 'RELEVO'}`;
+    const prefix = isPreview ? '📢 PRÓXIMO: ' : '';
+    topActiveRulePillEl.innerHTML = `${rule.icon ? rule.icon.split(' ')[0] : '🥊'} ${prefix}${teamPrefix}${rule.fullName || rule.name} • ${rule.pts > 0 ? '+' + rule.pts + ' PTS' : 'RELEVO'}`;
   }
 
-  // Stay fully visible for 7.5 seconds so it can be read comfortably, then collapse to mini HUD bar until event finishes!
+  // During preview stay fully visible. When active, collapse to mini HUD bar after 6 seconds!
   if (ruleCardHideTimeout) clearTimeout(ruleCardHideTimeout);
-  ruleCardHideTimeout = setTimeout(() => {
-    if (activeRuleCardEl.classList.contains('visible')) {
-      activeRuleCardEl.classList.add('compact-mode');
-    }
-  }, 7500);
+  if (!isPreview) {
+    ruleCardHideTimeout = setTimeout(() => {
+      if (activeRuleCardEl.classList.contains('visible')) {
+        activeRuleCardEl.classList.add('compact-mode');
+      }
+    }, 6000);
+  }
 }
 
-// Spin Animation Function
-function animateSpin(targetRule, duration = 4000) {
+// Spin Animation Function (Fast 2.2s spin)
+function animateSpin(targetRule, duration = 2200) {
   if (isSpinning) return;
   isSpinning = true;
 
@@ -238,8 +245,8 @@ function animateSpin(targetRule, duration = 4000) {
   const pointerAngle = (3 * Math.PI) / 2;
   const targetSliceMid = safeTargetIndex * sliceAngle + sliceAngle / 2;
   
-  // INCREASE SPINS: 14 full rotations for maximum excitement & momentum!
-  const extraSpins = 14 * 2 * Math.PI;
+  // Fast & snappy: 6 rotations for quick momentum
+  const extraSpins = 6 * 2 * Math.PI;
   const normalizedCurrent = currentAngle % (2 * Math.PI);
   let finalAngle = pointerAngle - targetSliceMid;
   while (finalAngle < normalizedCurrent + extraSpins) {
@@ -256,7 +263,7 @@ function animateSpin(targetRule, duration = 4000) {
     const progress = Math.min(elapsed / duration, 1);
     
     // Dynamic cubic bezier ease out
-    const easeOut = 1 - Math.pow(1 - progress, 3.5);
+    const easeOut = 1 - Math.pow(1 - progress, 3.2);
     currentAngle = startAngle + totalChange * easeOut;
 
     // Sound tick on passing each slice
@@ -276,13 +283,13 @@ function animateSpin(targetRule, duration = 4000) {
       activeRuleCardEl.classList.remove('spinning');
       sounds.playRuleSelected();
 
-      // Show rule card on bottom-right for reading
-      displayRuleCard(targetRule);
+      // Show rule card on bottom-right as preview announcement
+      displayRuleCard(targetRule, true);
 
-      // Keep roulette visible for 2.5s so viewer sees where it landed, then fade out!
+      // Keep roulette visible for 1.2s then fade out
       rouletteHideTimeout = setTimeout(() => {
         if (rouletteContainerEl) rouletteContainerEl.classList.remove('visible');
-      }, 2500);
+      }, 1200);
     }
   }
 
@@ -429,9 +436,38 @@ function updateOverlay(state) {
 
   // Active Rule & Event Countdown Bar
   const ruleCountdownBadgeEl = document.getElementById('ruleCountdownBadge');
-  const isRuleActive = state.currentRule && state.ruleTimeLeft > 0 && (state.phase === 'fighting' || state.phase === 'paused');
+  const hasRule = state.currentRule && (state.phase === 'fighting' || state.phase === 'paused');
+  const isPreview = hasRule && state.ruleState === 'preview';
+  const isActive = hasRule && (state.ruleState === 'active' || (!state.ruleState && state.ruleTimeLeft > 0));
 
-  if (isRuleActive) {
+  if (isPreview) {
+    if (!activeRuleCardEl.classList.contains('visible') && !isSpinning) {
+      displayRuleCard(state.currentRule, true);
+    }
+    if (ruleStatusLabelEl) {
+      ruleStatusLabelEl.textContent = '📢 PRÓXIMO RETO';
+    }
+    if (ruleTimerFillEl) {
+      ruleTimerFillEl.style.width = '100%';
+    }
+    if (ruleCountdownBadgeEl) {
+      ruleCountdownBadgeEl.textContent = `⏳ EN ${state.ruleStartsIn !== undefined ? state.ruleStartsIn : 0}s`;
+    }
+
+    if (topActiveRulePillEl) {
+      topActiveRulePillEl.style.display = 'block';
+      const isRed = state.currentRule.targetTeam === 'red';
+      const isBlue = state.currentRule.targetTeam === 'blue';
+      const teamPrefix = isRed ? '🔴 ' : isBlue ? '🔵 ' : '';
+      topActiveRulePillEl.innerHTML = `${state.currentRule.icon ? state.currentRule.icon.split(' ')[0] : '🥊'} 📢 PRÓXIMO: ${teamPrefix}${state.currentRule.name} • ⏳ EN ${state.ruleStartsIn !== undefined ? state.ruleStartsIn : 0}s`;
+    }
+  } else if (isActive) {
+    if (!activeRuleCardEl.classList.contains('visible') && !isSpinning) {
+      displayRuleCard(state.currentRule, false);
+    }
+    if (ruleStatusLabelEl) {
+      ruleStatusLabelEl.textContent = '⚡ EN VIVO';
+    }
     const duration = state.ruleDuration || 15;
     const rProgress = (state.ruleTimeLeft / duration) * 100;
     if (ruleTimerFillEl) {
