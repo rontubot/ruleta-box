@@ -217,7 +217,6 @@ function startTimer() {
               state.ruleState = 'active';
               state.ruleStartsIn = 0;
               state.ruleTimeLeft = state.ruleDuration; // 15s completos a partir de este segundo exacto
-              io.emit('sound_trigger', 'bell');
               logEvent(`🔥 ¡EVENTO EN VIGOR!: ${state.currentRule.name} (15 segundos)`);
             }
           } else if (state.ruleState === 'active') {
